@@ -1,0 +1,425 @@
+{
+  "generated_at_utc": "2026-11-17T17:46:59+00:00",
+  "overall_status": "pass",
+  "metadata": {
+    "captured_at_utc": "2026-11-17T17:46:58+00:00",
+    "git_commit": null,
+    "python": "3.12.3",
+    "platform": "Linux-6.1.190-237.431.amzn2023.x86_64-x86_64-with-glibc2.39",
+    "package_versions": {
+      "mcp": "1.30.0",
+      "databricks-sql-connector": "4.9.0",
+      "databricks-sdk": "0.122.0",
+      "httpx": "0.28.1",
+      "pydantic": "2.13.3"
+    },
+    "configured_resources": {
+      "custom_mcp_url": "https://fraudulent-transaction-mcp-7474654188777746.aws.databricksapps.com/mcp",
+      "genie_mcp_url": "https://dbc-aae0ba16-8727.cloud.databricks.com/api/2.0/mcp/genie/01f1e2a9b56e182ea33536af5a1b8c98",
+      "sql_hostname": "dbc-aae0ba16-8727.cloud.databricks.com",
+      "sql_http_path": "/sql/1.0/warehouses/50d2bd4ddf65e0f5",
+      "clean_table": "workspace.default.card_transaction_mcp_clean",
+      "label_table": "workspace.default.card_transaction_mcp_evaluation_labels"
+    },
+    "source_file_sha256": {
+      "src/fraud_transaction_mcp/analytics.py": "7bdf24f8f171596c7c471102674ca773c80b3e25e0b8fba26f5d051360abe50c",
+      "src/fraud_transaction_mcp/app.py": "2e21ac280bc04ec84b01f8eec19de747ae531c8810c174d2ca57227376b4f17e",
+      "src/fraud_transaction_mcp/sql_guard.py": "428e6d4b8f6bb349d369f3d7e3bb959b7367f8c465c38bc172a780ed43d5b58a",
+      "src/fraud_transaction_mcp/tools/__init__.py": "c419dd2646e32f602eb0b60155a73a10ac4476080b90b690098d13e035d0a1de",
+      "src/fraud_transaction_mcp/backend.py": "2db4dcaefd877254e788ae32126d9f9feca674df3773f6c2486c9008c35d5c54",
+      "src/fraud_transaction_mcp/routes.py": "5cd52157cf17fa38c473220ebc860e8d15a14c7c3f785650e67284b3daa427c0",
+      "src/fraud_transaction_mcp/nl_sql.py": "8deb2ddf5570cf7b3c37867425dc7c3be8e0b638110b53728f64acb22d8dd4bb",
+      "app.yaml": "e047b316c90f7d8c4c5a4b7724b90e85281a5a6090284059e439654176d4c789",
+      "client/mcp_client.py": "166f3162e195b656ab0210510f3ecf7411bd748aba3fc1b24488d676affcbd1d",
+      "client/llm_client.py": "5e63c80591d0d768b1ae515da47adddd18fd08036b96f790c759b2734c221abc",
+      "databricks/sql/02_genie_views.sql": "713c93fbd1bbcd8a74f210fe896cb712c91a631c6cd75e86d2e3d353ffeb359a"
+    },
+    "credential_presence": {
+      "custom_mcp_oauth_token_present": false,
+      "genie_mcp_oauth_token_present": false,
+      "sql_token_present": false,
+      "oauth_client_id_present": false,
+      "oauth_client_secret_present": false
+    }
+  },
+  "suites": {
+    "preflight": {
+      "status": "pass",
+      "case_counts": {
+        "pass": 8,
+        "fail": 0,
+        "error": 0,
+        "warn": 0,
+        "skipped": 0,
+        "manual_review": 0
+      },
+      "metrics": {
+        "transport": "in-memory MCP transport -> fraud_transaction_mcp.app.create_server(DatabricksBackend) -> SQL warehouse",
+        "clean_table_rows": 16911573,
+        "case_counts": {
+          "pass": 8,
+          "fail": 0,
+          "error": 0,
+          "warn": 0,
+          "skipped": 0,
+          "manual_review": 0
+        }
+      }
+    },
+    "unit_tests": {
+      "status": "pass",
+      "case_counts": {
+        "pass": 2,
+        "fail": 0,
+        "error": 0,
+        "warn": 0,
+        "skipped": 0,
+        "manual_review": 0
+      },
+      "metrics": {
+        "totals": {
+          "tests": 131,
+          "passed": 130,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 1
+        },
+        "case_counts": {
+          "pass": 2,
+          "fail": 0,
+          "error": 0,
+          "warn": 0,
+          "skipped": 0,
+          "manual_review": 0
+        }
+      }
+    },
+    "custom_functional": {
+      "status": "pass",
+      "case_counts": {
+        "pass": 16,
+        "fail": 0,
+        "error": 0,
+        "warn": 0,
+        "skipped": 0,
+        "manual_review": 0
+      },
+      "metrics": {
+        "transport": "in-memory MCP transport -> fraud_transaction_mcp.app.create_server(DatabricksBackend) -> SQL warehouse",
+        "sample_entities": {
+          "user_id": "1455",
+          "card_id": "0",
+          "card_key": "1455::0",
+          "transaction_id": "10000056",
+          "merchant_id": "1799189980464955940"
+        },
+        "case_counts": {
+          "pass": 16,
+          "fail": 0,
+          "error": 0,
+          "warn": 0,
+          "skipped": 0,
+          "manual_review": 0
+        }
+      }
+    },
+    "sql_reconciliation": {
+      "status": "pass",
+      "case_counts": {
+        "pass": 10,
+        "fail": 0,
+        "error": 0,
+        "warn": 0,
+        "skipped": 0,
+        "manual_review": 0
+      },
+      "metrics": {
+        "sample_entities": {
+          "user_id": "1455",
+          "card_id": "0",
+          "card_key": "1455::0",
+          "transaction_id": "10000056",
+          "merchant_id": "1799189980464955940"
+        },
+        "case_counts": {
+          "pass": 10,
+          "fail": 0,
+          "error": 0,
+          "warn": 0,
+          "skipped": 0,
+          "manual_review": 0
+        }
+      }
+    },
+    "security_negative": {
+      "status": "pass",
+      "case_counts": {
+        "pass": 41,
+        "fail": 0,
+        "error": 0,
+        "warn": 0,
+        "skipped": 0,
+        "manual_review": 0
+      },
+      "metrics": {
+        "case_counts": {
+          "pass": 41,
+          "fail": 0,
+          "error": 0,
+          "warn": 0,
+          "skipped": 0,
+          "manual_review": 0
+        }
+      }
+    },
+    "performance": {
+      "status": "pass",
+      "case_counts": {
+        "pass": 7,
+        "fail": 0,
+        "error": 0,
+        "warn": 0,
+        "skipped": 0,
+        "manual_review": 0
+      },
+      "metrics": {
+        "transport": "in-memory MCP transport -> fraud_transaction_mcp.app.create_server(DatabricksBackend) -> SQL warehouse",
+        "per_tool": {
+          "search_transactions": {
+            "n": 5,
+            "min_ms": 417.5,
+            "p50_ms": 452.2,
+            "p95_ms": 565.1,
+            "mean_ms": 471.7,
+            "max_ms": 586.5,
+            "cold_ms": 442.3,
+            "calls": 6,
+            "errors": 0,
+            "error_rate": 0.0,
+            "sql_statements_per_call": 1,
+            "p95_threshold_ms": 15000.0
+          },
+          "summarize_transactions[merchant, 2019]": {
+            "n": 5,
+            "min_ms": 418.8,
+            "p50_ms": 440.8,
+            "p95_ms": 495.8,
+            "mean_ms": 454.2,
+            "max_ms": 502.6,
+            "cold_ms": 510.5,
+            "calls": 6,
+            "errors": 0,
+            "error_rate": 0.0,
+            "sql_statements_per_call": 1,
+            "p95_threshold_ms": 15000.0
+          },
+          "summarize_transactions[month, all years]": {
+            "n": 5,
+            "min_ms": 453.4,
+            "p50_ms": 485.9,
+            "p95_ms": 532.7,
+            "mean_ms": 492.2,
+            "max_ms": 537.0,
+            "cold_ms": 454.5,
+            "calls": 6,
+            "errors": 0,
+            "error_rate": 0.0,
+            "sql_statements_per_call": 1,
+            "p95_threshold_ms": 15000.0
+          },
+          "get_cardholder_profile": {
+            "n": 5,
+            "min_ms": 1228.4,
+            "p50_ms": 1308.0,
+            "p95_ms": 1360.9,
+            "mean_ms": 1298.7,
+            "max_ms": 1363.5,
+            "cold_ms": 1424.1,
+            "calls": 6,
+            "errors": 0,
+            "error_rate": 0.0,
+            "sql_statements_per_call": 3,
+            "p95_threshold_ms": 15000.0
+          },
+          "merchant_relationships": {
+            "n": 5,
+            "min_ms": 835.6,
+            "p50_ms": 884.6,
+            "p95_ms": 936.1,
+            "mean_ms": 887.3,
+            "max_ms": 938.2,
+            "cold_ms": 872.9,
+            "calls": 6,
+            "errors": 0,
+            "error_rate": 0.0,
+            "sql_statements_per_call": 2,
+            "p95_threshold_ms": 15000.0
+          },
+          "generate_transaction_report": {
+            "n": 5,
+            "min_ms": 1689.0,
+            "p50_ms": 1796.7,
+            "p95_ms": 1891.6,
+            "mean_ms": 1798.8,
+            "max_ms": 1913.7,
+            "cold_ms": 1721.2,
+            "calls": 6,
+            "errors": 0,
+            "error_rate": 0.0,
+            "sql_statements_per_call": 4,
+            "p95_threshold_ms": 15000.0
+          },
+          "ask_transactions": {
+            "n": 2,
+            "min_ms": 2078.3,
+            "p50_ms": 2185.2,
+            "p95_ms": 2281.3,
+            "mean_ms": 2185.2,
+            "max_ms": 2292.0,
+            "cold_ms": 2296.7,
+            "calls": 3,
+            "errors": 0,
+            "error_rate": 0.0,
+            "sql_statements_per_call": 1,
+            "p95_threshold_ms": 45000.0
+          }
+        },
+        "overall_warm": {
+          "n": 32,
+          "min_ms": 417.5,
+          "p50_ms": 843.0,
+          "p95_ms": 1987.8,
+          "mean_ms": 980.8,
+          "max_ms": 2292.0
+        },
+        "total_calls": 39,
+        "total_errors": 0,
+        "overall_error_rate": 0.0,
+        "case_counts": {
+          "pass": 7,
+          "fail": 0,
+          "error": 0,
+          "warn": 0,
+          "skipped": 0,
+          "manual_review": 0
+        }
+      }
+    },
+    "genie_benchmark": {
+      "status": "pass",
+      "case_counts": {
+        "pass": 5,
+        "fail": 0,
+        "error": 0,
+        "warn": 0,
+        "skipped": 0,
+        "manual_review": 0
+      },
+      "metrics": {
+        "genie_mcp_url": "https://dbc-aae0ba16-8727.cloud.databricks.com/api/2.0/mcp/genie/01f1e2a9b56e182ea33536af5a1b8c98",
+        "latency": {
+          "n": 5,
+          "min_ms": 12508.9,
+          "p50_ms": 13062.5,
+          "p95_ms": 13755.6,
+          "mean_ms": 13084.5,
+          "max_ms": 13837.2
+        },
+        "case_counts": {
+          "pass": 5,
+          "fail": 0,
+          "error": 0,
+          "warn": 0,
+          "skipped": 0,
+          "manual_review": 0
+        }
+      }
+    },
+    "hybrid_routing": {
+      "status": "manual_review",
+      "case_counts": {
+        "pass": 0,
+        "fail": 0,
+        "error": 0,
+        "warn": 0,
+        "skipped": 0,
+        "manual_review": 10
+      },
+      "metrics": {
+        "worksheet": "/Workspace/Users/michael.decarlo@fincen.gov/fraudulent-transaction-mcp/evaluation/evidence/hybrid_routing_worksheet.csv",
+        "questions": 10,
+        "reviewed": 0,
+        "case_counts": {
+          "pass": 0,
+          "fail": 0,
+          "error": 0,
+          "warn": 0,
+          "skipped": 0,
+          "manual_review": 10
+        }
+      }
+    },
+    "llm_judge": {
+      "status": "pass",
+      "case_counts": {
+        "pass": 11,
+        "fail": 0,
+        "error": 0,
+        "warn": 0,
+        "skipped": 0,
+        "manual_review": 0
+      },
+      "metrics": {
+        "agent_model": "models.ai.gpt-5-6-luna",
+        "judge_model": "databricks-claude-sonnet-4-6",
+        "questions": 10,
+        "agent_latency": {
+          "n": 10,
+          "min_ms": 8901.6,
+          "p50_ms": 39789.7,
+          "p95_ms": 78207.0,
+          "mean_ms": 39947.6,
+          "max_ms": 99563.9
+        },
+        "judge_results": {
+          "groundedness": {
+            "yes": 10,
+            "no": 0,
+            "error": 0
+          },
+          "policy": {
+            "yes": 10,
+            "no": 0,
+            "error": 0
+          },
+          "tool_use": {
+            "yes": 10,
+            "no": 0,
+            "error": 0
+          },
+          "answer_quality": {
+            "yes": 10,
+            "no": 0,
+            "error": 0
+          }
+        },
+        "judge_pass_rate": {
+          "groundedness": 1.0,
+          "policy": 1.0,
+          "tool_use": 1.0,
+          "answer_quality": 1.0
+        },
+        "pav_verifier_passed_but_judge_failed": [],
+        "controls_rejected": 1,
+        "case_counts": {
+          "pass": 11,
+          "fail": 0,
+          "error": 0,
+          "warn": 0,
+          "skipped": 0,
+          "manual_review": 0
+        }
+      }
+    }
+  }
+}

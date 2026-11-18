@@ -1,0 +1,31 @@
+# Evaluation settings (override any key with an EVAL_<KEY> environment variable).
+# Secrets are never stored here: set CUSTOM_MCP_OAUTH_TOKEN in the environment for mcp_mode: http.
+mcp_mode: inprocess          # inprocess | http
+custom_mcp_url: https://fraudulent-transaction-mcp-7474654188777746.aws.databricksapps.com/mcp
+sql_warehouse_id: 50d2bd4ddf65e0f5
+clean_table: workspace.default.card_transaction_mcp_clean
+raw_table: workspace.default.card_transaction
+label_table: workspace.default.card_transaction_mcp_evaluation_labels
+llm_endpoint: models.ai.gpt-5-6-luna
+app_service_principal: 81330d64-ac6b-4cfd-8c25-732c5f3a46df  # fraudulent-transaction-mcp
+genie_spaces:
+  behavioral: 01f1e2a9b56e182ea33536af5a1b8c98  # copy of Jenna's 01f1da1b... on card_transaction_mcp_clean
+  fraud: 01f1dc44f22413fe82320128338353b5
+enable_llm: true
+enable_genie: true
+benchmark_year: 2019
+performance_iterations: 5
+performance_llm_iterations: 2
+p95_threshold_ms: 15000
+p95_llm_threshold_ms: 45000
+genie_timeout_s: 300
+evidence_dir: evaluation/evidence
+reports_dir: evaluation/reports
+# LLM-as-judge suite (10_llm_judge). Use a judge model from a different family than llm_endpoint.
+enable_judge: true
+judge_endpoint: databricks-claude-sonnet-4-6
+judge_cases: ""               # e.g. "HR-01,HR-08"; empty = all hybrid-routing questions
+judge_mlflow_experiment: ""   # e.g. /Users/<you>/fraudulent-transaction-mcp-judge
+# mcp_mode: http without CUSTOM_MCP_OAUTH_TOKEN mints a token from the evaluation service
+# principal whose OAuth client_id / client_secret are stored in this secret scope.
+eval_sp_secret_scope: fraud-mcp-eval

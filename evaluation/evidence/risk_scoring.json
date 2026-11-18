@@ -1,0 +1,798 @@
+{
+  "suite": "risk_scoring",
+  "status": "fail",
+  "started_at_utc": "2026-11-18T12:24:44+00:00",
+  "finished_at_utc": "2026-11-18T12:37:37+00:00",
+  "description": "Rule-based fraud risk scoring: guidance contract, card-level scoring and user ranking against pinned results, independent SQL reconciliation of the indicators, run_risk_sql guardrails, latency, agent stability on a ranking question, and label-based efficacy (evaluation only).",
+  "cases": [
+    {
+      "case_id": "RS-F01",
+      "name": "Guidance returns the four indicators, parameters and routing rule",
+      "status": "pass",
+      "duration_ms": 1.8,
+      "details": {
+        "indicators": [
+          "amount_anomaly",
+          "velocity_anomaly",
+          "location_channel_change",
+          "merchant_novelty"
+        ],
+        "parameters": {
+          "amount_percentile": 0.95,
+          "amount_min_history": 10,
+          "velocity_window_hours": 24,
+          "velocity_min_count": 5,
+          "velocity_multiplier": 3,
+          "band_medium": 0.5,
+          "band_high": 0.75,
+          "max_scoring_window_days": 31
+        },
+        "error": null
+      }
+    },
+    {
+      "case_id": "RS-F02",
+      "name": "Card 6::0 2019-06-01..2019-07-01 scores match pinned result",
+      "status": "pass",
+      "duration_ms": 4136.2,
+      "details": {
+        "expected": {
+          "card_key": "6::0",
+          "start": "2019-06-01",
+          "end": "2019-07-01",
+          "rows": 61,
+          "band_counts": {
+            "medium": 1,
+            "low": 60
+          },
+          "top_transaction": "15068277",
+          "top_score": 0.5
+        },
+        "observed": {
+          "rows_scored": 61,
+          "complete": true,
+          "score_check": {
+            "checked": 61,
+            "inconsistent": 0,
+            "examples": []
+          },
+          "band_counts": {
+            "medium": 1,
+            "low": 60
+          },
+          "indicator_counts": {
+            "amount_anomaly": 2,
+            "velocity_anomaly": 0,
+            "location_channel_change": 3,
+            "merchant_novelty": 2
+          },
+          "top": {
+            "transaction_id": "15068277",
+            "card_key": "6::0",
+            "transaction_time": "2019-06-03 20:30:00",
+            "amount": 21.15,
+            "amount_anomaly": 0,
+            "velocity_anomaly": 0,
+            "location_channel_change": 1,
+            "merchant_novelty": 1,
+            "risk_score": 0.5,
+            "risk_band": "medium"
+          }
+        },
+        "error": null
+      }
+    },
+    {
+      "case_id": "RS-F03",
+      "name": "User ranking 2020-01-01..2020-02-01 matches pinned top five",
+      "status": "pass",
+      "duration_ms": 50551.3,
+      "details": {
+        "expected": {
+          "start": "2020-01-01",
+          "end": "2020-02-01",
+          "top_users": [
+            "1161",
+            "1007",
+            "522",
+            "1988",
+            "442"
+          ],
+          "high": [
+            11,
+            9,
+            7,
+            7,
+            6
+          ],
+          "medium": [
+            26,
+            17,
+            27,
+            21,
+            18
+          ]
+        },
+        "observed": [
+          {
+            "user_id": "1161",
+            "transactions_scored": 159,
+            "high_count": 11,
+            "medium_count": 26,
+            "avg_risk_score": 0.2735849057,
+            "max_risk_score": 1.0
+          },
+          {
+            "user_id": "1007",
+            "transactions_scored": 121,
+            "high_count": 9,
+            "medium_count": 17,
+            "avg_risk_score": 0.2210743802,
+            "max_risk_score": 0.75
+          },
+          {
+            "user_id": "522",
+            "transactions_scored": 148,
+            "high_count": 7,
+            "medium_count": 27,
+            "avg_risk_score": 0.2652027027,
+            "max_risk_score": 0.75
+          },
+          {
+            "user_id": "1988",
+            "transactions_scored": 113,
+            "high_count": 7,
+            "medium_count": 21,
+            "avg_risk_score": 0.2256637168,
+            "max_risk_score": 1.0
+          },
+          {
+            "user_id": "442",
+            "transactions_scored": 99,
+            "high_count": 6,
+            "medium_count": 18,
+            "avg_risk_score": 0.2323232323,
+            "max_risk_score": 0.75
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "case_id": "RS-P01",
+      "name": "Population ranking SQL within 90s",
+      "status": "pass",
+      "duration_ms": 50551.3,
+      "details": {
+        "threshold_ms": 90000.0
+      }
+    },
+    {
+      "case_id": "RS-R03",
+      "name": "Top-ranked user 1161 re-scored per transaction matches the ranking row",
+      "status": "pass",
+      "duration_ms": 1158.4,
+      "details": {
+        "ranking_row": {
+          "user_id": "1161",
+          "transactions_scored": 159,
+          "high_count": 11,
+          "medium_count": 26,
+          "avg_risk_score": 0.2735849057,
+          "max_risk_score": 1.0
+        },
+        "transaction_level": {
+          "rows_scored": 159,
+          "band_counts": {
+            "high": 11,
+            "medium": 26,
+            "low": 122
+          },
+          "complete": true
+        }
+      }
+    },
+    {
+      "case_id": "RS-S01",
+      "name": "run_risk_sql rejects: Unscoped SQL (no card/user/time filter)",
+      "status": "pass",
+      "duration_ms": 1.5,
+      "details": {
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool run_risk_sql: Scoring SQL must filter on card_key, user_id, transaction_id or transaction_time in a WHERE clause"
+      }
+    },
+    {
+      "case_id": "RS-S02",
+      "name": "run_risk_sql rejects: Stacked statements",
+      "status": "pass",
+      "duration_ms": 0.7,
+      "details": {
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool run_risk_sql: Only a single statement is allowed"
+      }
+    },
+    {
+      "case_id": "RS-S03",
+      "name": "run_risk_sql rejects: Comment injection",
+      "status": "pass",
+      "duration_ms": 0.5,
+      "details": {
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool run_risk_sql: SQL comments are not allowed"
+      }
+    },
+    {
+      "case_id": "RS-S04",
+      "name": "run_risk_sql rejects: Restricted label table",
+      "status": "pass",
+      "duration_ms": 0.5,
+      "details": {
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool run_risk_sql: Fraud labels are not allowed in analysis queries"
+      }
+    },
+    {
+      "case_id": "RS-S05",
+      "name": "run_risk_sql rejects: Fraud label column",
+      "status": "pass",
+      "duration_ms": 0.5,
+      "details": {
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool run_risk_sql: Fraud labels are not allowed in analysis queries"
+      }
+    },
+    {
+      "case_id": "RS-S06",
+      "name": "run_risk_sql rejects: DML statement",
+      "status": "pass",
+      "duration_ms": 0.5,
+      "details": {
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool run_risk_sql: Only SELECT queries are allowed"
+      }
+    },
+    {
+      "case_id": "RS-S07",
+      "name": "run_risk_sql rejects: CTE hiding another table",
+      "status": "pass",
+      "duration_ms": 1.2,
+      "details": {
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool run_risk_sql: Query references a table that is not allowed: workspace.default.card_transaction"
+      }
+    },
+    {
+      "case_id": "RS-S08",
+      "name": "run_risk_sql rejects: External file read",
+      "status": "pass",
+      "duration_ms": 0.5,
+      "details": {
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool run_risk_sql: Query contains a disallowed keyword"
+      }
+    },
+    {
+      "case_id": "RS-S09",
+      "name": "run_risk_sql rejects: Row limit above maximum",
+      "status": "pass",
+      "duration_ms": 0.5,
+      "details": {
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool run_risk_sql: limit must be an integer between 1 and 200"
+      }
+    },
+    {
+      "case_id": "RS-S10",
+      "name": "Positive control: scoped read-only SELECT is accepted and row-capped",
+      "status": "pass",
+      "duration_ms": 570.8,
+      "details": {
+        "message": "{\"summary\": {\"rows_scored\": 5, \"truncated\": false, \"score_check\": {\"checked\": 0, \"inconsistent\": 0, \"examples\": []}, \"missing_required_columns\": [\"card_key\", \"transaction_time\", \"amount_anomaly\", \"..."
+      }
+    },
+    {
+      "case_id": "RS-R01",
+      "name": "Merchant novelty flags match a direct count of earlier visits",
+      "status": "pass",
+      "duration_ms": 4163.9,
+      "details": {
+        "checked": 5,
+        "mismatches": []
+      }
+    },
+    {
+      "case_id": "RS-R02",
+      "name": "Amount anomaly flags agree with the exact earlier-amount percentile",
+      "status": "pass",
+      "duration_ms": 3606.7,
+      "details": {
+        "checked": 5,
+        "mismatches": []
+      }
+    },
+    {
+      "case_id": "RS-ST01-1",
+      "name": "Agent run 1: answers the ranking question with the reference top five",
+      "status": "pass",
+      "duration_ms": 288601.9,
+      "details": {
+        "verdict": "PASS",
+        "revisions": 0,
+        "top_users": [
+          "1161",
+          "1007",
+          "522",
+          "1988",
+          "442"
+        ],
+        "expected": [
+          "1161",
+          "1007",
+          "522",
+          "1988",
+          "442"
+        ],
+        "referred_elsewhere": false,
+        "tool_calls": [
+          "get_risk_scoring_guidance",
+          "run_risk_sql",
+          "run_risk_sql",
+          "search_transactions",
+          "generate_transaction_report",
+          "generate_transaction_report",
+          "generate_transaction_report",
+          "generate_transaction_report",
+          "generate_transaction_report",
+          "ask_transactions",
+          "search_transactions",
+          "run_risk_sql",
+          "run_risk_sql"
+        ],
+        "answer": "## Answer\n\nThe top five users by **rule-based fraud-risk indicators** for January 2020 are:\n\n| Rank | User | Transactions scored | Cards | High-risk transactions | Medium-risk transactions | Average risk score | Maximum risk score |\n|---:|---:|---:|---:|---:|---:|---:|---:|\n| 1 | **1161** | 159 | 1 | 11 | 26 | 0.2735849057 | 1.00 |\n| 2 | **1007** | 121 | 1 | 9 | 17 | 0.2210743802 | 0.75 |\n| 3 | **522** | 148 | 1 | 7 | 27 | 0.2652027027 | 0.75 |\n| 4 | **1988** | 113 | 1 | 7 | 21 | 0.2256637168 | 1.00 |\n| 5 | **442** | 99 | 2 | 6 | 18 | 0.2323232323 | 0.75 |\n\nThe ranking uses the specified or..."
+      }
+    },
+    {
+      "case_id": "RS-ST01-2",
+      "name": "Agent run 2: answers the ranking question with the reference top five",
+      "status": "fail",
+      "duration_ms": 226361.3,
+      "details": {
+        "verdict": "PASS",
+        "revisions": 0,
+        "top_users": [
+          "1161",
+          "1007",
+          "522",
+          "1988",
+          "784"
+        ],
+        "expected": [
+          "1161",
+          "1007",
+          "522",
+          "1988",
+          "442"
+        ],
+        "referred_elsewhere": false,
+        "tool_calls": [
+          "get_risk_scoring_guidance",
+          "run_risk_sql",
+          "run_risk_sql",
+          "run_risk_sql",
+          "run_risk_sql",
+          "search_transactions",
+          "search_transactions",
+          "search_transactions",
+          "search_transactions",
+          "search_transactions",
+          "ask_transactions",
+          "run_risk_sql",
+          "search_transactions",
+          "search_transactions"
+        ],
+        "answer": "## Answer\n\nThe top five users by **January 2020 rule-based fraud-risk indicators** are ranked by **high-risk transaction count descending, then medium-risk count descending, then average risk score descending**:\n\n| Rank | User ID | Card | Transactions scored | High | Medium | Average risk score | Maximum |\n|---:|---:|---|---:|---:|---:|---:|---:|\n| 1 | 1161 | 1161::0 | 159 | 11 | 26 | 0.2736 | 1.00 |\n| 2 | 1007 | 1007::0 | 121 | 9 | 17 | 0.2211 | 0.75 |\n| 3 | 522 | 522::0 | 148 | 7 | 27 | 0.2652 | 0.75 |\n| 4 | 1988 | 1988::0 | 113 | 7 | 21 | 0.2257 | 1.00 |\n| 5 | 784 | 784::3 | 64 | 6 | 17 ..."
+      }
+    },
+    {
+      "case_id": "RS-ST01-3",
+      "name": "Agent run 3: answers the ranking question with the reference top five",
+      "status": "pass",
+      "duration_ms": 115102.9,
+      "details": {
+        "verdict": "PASS",
+        "revisions": 0,
+        "top_users": [
+          "1161",
+          "1007",
+          "522",
+          "1988",
+          "442"
+        ],
+        "expected": [
+          "1161",
+          "1007",
+          "522",
+          "1988",
+          "442"
+        ],
+        "referred_elsewhere": false,
+        "tool_calls": [
+          "get_risk_scoring_guidance",
+          "run_risk_sql",
+          "run_risk_sql",
+          "generate_transaction_report",
+          "generate_transaction_report",
+          "generate_transaction_report",
+          "generate_transaction_report",
+          "generate_transaction_report",
+          "ask_transactions",
+          "search_transactions",
+          "search_transactions",
+          "get_cardholder_profile"
+        ],
+        "answer": "## Answer:\n\nVerified January 2020 rule-based risk ranking for human review:\n\n| Rank | User ID | Transactions scored | High-risk transactions | Medium-risk transactions | Average risk score | Maximum risk score |\n|---:|---:|---:|---:|---:|---:|---:|\n| 1 | **1161** | 159 | 11 | 26 | 0.2736 | 1.00 |\n| 2 | **1007** | 121 | 9 | 17 | 0.2211 | 0.75 |\n| 3 | **522** | 148 | 7 | 27 | 0.2652 | 0.75 |\n| 4 | **1988** | 113 | 7 | 21 | 0.2257 | 1.00 |\n| 5 | **442** | 99 | 6 | 18 | 0.2323 | 0.75 |\n\nThe ranking is ordered by high-risk count, then medium-risk count, then average risk score, as specified by t..."
+      }
+    },
+    {
+      "case_id": "RS-ST01",
+      "name": "Same top five across 3 agent runs",
+      "status": "fail",
+      "duration_ms": null,
+      "details": {
+        "runs": 3,
+        "top_users": [
+          [
+            "1161",
+            "1007",
+            "522",
+            "1988",
+            "442"
+          ],
+          [
+            "1161",
+            "1007",
+            "522",
+            "1988",
+            "784"
+          ],
+          [
+            "1161",
+            "1007",
+            "522",
+            "1988",
+            "442"
+          ]
+        ]
+      }
+    },
+    {
+      "case_id": "RS-P02",
+      "name": "Agent answers within 180s with at most 1 revision",
+      "status": "warn",
+      "duration_ms": 288601.9,
+      "details": {
+        "threshold_ms": 180000.0,
+        "times_ms": [
+          288602,
+          226361,
+          115103
+        ],
+        "revisions": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "case_id": "RS-E01-1",
+      "name": "Efficacy window 2019-01-01..2019-01-31 scored against labels",
+      "status": "pass",
+      "duration_ms": 24615.0,
+      "details": {
+        "transactions": 75356,
+        "fraud": 121,
+        "by_score": [
+          {
+            "risk_score": 0.0,
+            "transactions": 66286,
+            "fraud": 47,
+            "fraud_rate": 0.000709
+          },
+          {
+            "risk_score": 0.25,
+            "transactions": 7721,
+            "fraud": 43,
+            "fraud_rate": 0.005569
+          },
+          {
+            "risk_score": 0.5,
+            "transactions": 1159,
+            "fraud": 27,
+            "fraud_rate": 0.023296
+          },
+          {
+            "risk_score": 0.75,
+            "transactions": 183,
+            "fraud": 4,
+            "fraud_rate": 0.021858
+          },
+          {
+            "risk_score": 1.0,
+            "transactions": 7,
+            "fraud": 0,
+            "fraud_rate": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "RS-E01-2",
+      "name": "Efficacy window 2019-06-01..2019-06-30 scored against labels",
+      "status": "pass",
+      "duration_ms": 25454.3,
+      "details": {
+        "transactions": 74034,
+        "fraud": 107,
+        "by_score": [
+          {
+            "risk_score": 0.0,
+            "transactions": 64081,
+            "fraud": 33,
+            "fraud_rate": 0.000515
+          },
+          {
+            "risk_score": 0.25,
+            "transactions": 8402,
+            "fraud": 52,
+            "fraud_rate": 0.006189
+          },
+          {
+            "risk_score": 0.5,
+            "transactions": 1332,
+            "fraud": 18,
+            "fraud_rate": 0.013514
+          },
+          {
+            "risk_score": 0.75,
+            "transactions": 213,
+            "fraud": 4,
+            "fraud_rate": 0.018779
+          },
+          {
+            "risk_score": 1.0,
+            "transactions": 6,
+            "fraud": 0,
+            "fraud_rate": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "RS-E01-3",
+      "name": "Efficacy window 2019-11-01..2019-11-30 scored against labels",
+      "status": "pass",
+      "duration_ms": 26528.1,
+      "details": {
+        "transactions": 73514,
+        "fraud": 0,
+        "by_score": [
+          {
+            "risk_score": 0.0,
+            "transactions": 64392,
+            "fraud": 0,
+            "fraud_rate": 0.0
+          },
+          {
+            "risk_score": 0.25,
+            "transactions": 7816,
+            "fraud": 0,
+            "fraud_rate": 0.0
+          },
+          {
+            "risk_score": 0.5,
+            "transactions": 1114,
+            "fraud": 0,
+            "fraud_rate": 0.0
+          },
+          {
+            "risk_score": 0.75,
+            "transactions": 186,
+            "fraud": 0,
+            "fraud_rate": 0.0
+          },
+          {
+            "risk_score": 1.0,
+            "transactions": 6,
+            "fraud": 0,
+            "fraud_rate": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "RS-E02",
+      "name": "Fraud rate never falls as the risk score rises",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "min_transactions_per_level": 200,
+        "violations": [],
+        "by_score": [
+          {
+            "risk_score": 0.0,
+            "transactions": 194759,
+            "fraud": 80,
+            "fraud_rate": 0.000410764072520397
+          },
+          {
+            "risk_score": 0.25,
+            "transactions": 23939,
+            "fraud": 95,
+            "fraud_rate": 0.003968419733489285
+          },
+          {
+            "risk_score": 0.5,
+            "transactions": 3605,
+            "fraud": 45,
+            "fraud_rate": 0.012482662968099861
+          },
+          {
+            "risk_score": 0.75,
+            "transactions": 582,
+            "fraud": 8,
+            "fraud_rate": 0.013745704467353952
+          },
+          {
+            "risk_score": 1.0,
+            "transactions": 19,
+            "fraud": 0,
+            "fraud_rate": 0.0
+          }
+        ],
+        "base_fraud_rate": 0.0010228618598140903
+      }
+    },
+    {
+      "case_id": "RS-E03",
+      "name": "High band fraud rate is at least 3x the base rate",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "high_band_lift": 13.013632250342997,
+        "required": 3.0,
+        "medium_or_high_lift": 12.319401690150245
+      }
+    },
+    {
+      "case_id": "RS-E04",
+      "name": "No indicator flags more than 10% of transactions",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "over_cap": {},
+        "indicators": {
+          "amount_anomaly": {
+            "flagged": 11375,
+            "tp": 53,
+            "flag_rate": 0.05103093708502315,
+            "precision": 0.004659340659340659,
+            "lift": 4.5552003084634665
+          },
+          "velocity_anomaly": {
+            "flagged": 10049,
+            "tp": 22,
+            "flag_rate": 0.04508218784768331,
+            "precision": 0.0021892725644342722,
+            "lift": 2.1403404022046364
+          },
+          "location_channel_change": {
+            "flagged": 5250,
+            "tp": 21,
+            "flag_rate": 0.023552740193087607,
+            "precision": 0.004,
+            "lift": 3.9105964912280706
+          },
+          "merchant_novelty": {
+            "flagged": 6297,
+            "tp": 113,
+            "flag_rate": 0.028249829523023365,
+            "precision": 0.017945053199936476,
+            "lift": 17.543965519643162
+          }
+        }
+      }
+    }
+  ],
+  "metrics": {
+    "ranking_latency_ms": 50551.3,
+    "efficacy": {
+      "transactions": 222904,
+      "fraud": 228,
+      "base_fraud_rate": 0.0010228618598140903,
+      "by_score": [
+        {
+          "risk_score": 0.0,
+          "transactions": 194759,
+          "fraud": 80,
+          "fraud_rate": 0.000410764072520397
+        },
+        {
+          "risk_score": 0.25,
+          "transactions": 23939,
+          "fraud": 95,
+          "fraud_rate": 0.003968419733489285
+        },
+        {
+          "risk_score": 0.5,
+          "transactions": 3605,
+          "fraud": 45,
+          "fraud_rate": 0.012482662968099861
+        },
+        {
+          "risk_score": 0.75,
+          "transactions": 582,
+          "fraud": 8,
+          "fraud_rate": 0.013745704467353952
+        },
+        {
+          "risk_score": 1.0,
+          "transactions": 19,
+          "fraud": 0,
+          "fraud_rate": 0.0
+        }
+      ],
+      "indicators": {
+        "amount_anomaly": {
+          "flagged": 11375,
+          "tp": 53,
+          "flag_rate": 0.05103093708502315,
+          "precision": 0.004659340659340659,
+          "lift": 4.5552003084634665
+        },
+        "velocity_anomaly": {
+          "flagged": 10049,
+          "tp": 22,
+          "flag_rate": 0.04508218784768331,
+          "precision": 0.0021892725644342722,
+          "lift": 2.1403404022046364
+        },
+        "location_channel_change": {
+          "flagged": 5250,
+          "tp": 21,
+          "flag_rate": 0.023552740193087607,
+          "precision": 0.004,
+          "lift": 3.9105964912280706
+        },
+        "merchant_novelty": {
+          "flagged": 6297,
+          "tp": 113,
+          "flag_rate": 0.028249829523023365,
+          "precision": 0.017945053199936476,
+          "lift": 17.543965519643162
+        }
+      }
+    },
+    "case_counts": {
+      "pass": 25,
+      "fail": 2,
+      "error": 0,
+      "warn": 1,
+      "skipped": 0,
+      "manual_review": 0
+    }
+  },
+  "notes": [
+    "RS-E* are advisory (warn, not fail): they decide whether to tune thresholds or move to the z-score method, not whether the deployment is correct."
+  ]
+}

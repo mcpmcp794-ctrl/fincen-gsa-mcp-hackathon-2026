@@ -1,0 +1,177 @@
+{
+  "suite": "sql_reconciliation",
+  "status": "pass",
+  "started_at_utc": "2026-11-17T17:35:07+00:00",
+  "finished_at_utc": "2026-11-17T17:35:21+00:00",
+  "description": "MCP tool outputs compared with independently written Databricks SQL on the same warehouse (exact match for counts/ids, 0.01 tolerance for amounts), plus raw-vs-clean row-count reconciliation of the data-preparation pipeline.",
+  "cases": [
+    {
+      "case_id": "RC-01",
+      "name": "Row count: raw source table vs clean table (no rows lost in preparation)",
+      "status": "pass",
+      "duration_ms": 1040.7,
+      "details": {
+        "raw_rows": 16911573,
+        "clean_rows": 16911573,
+        "difference": 0
+      }
+    },
+    {
+      "case_id": "RC-02",
+      "name": "Row count for 2019: raw Year column vs clean transaction_time",
+      "status": "pass",
+      "duration_ms": 908.9,
+      "details": {
+        "year": 2019,
+        "raw_rows": 1723938,
+        "clean_rows": 1723938
+      }
+    },
+    {
+      "case_id": "RC-03",
+      "name": "summarize_transactions(merchant, 2019) top 10 vs SQL GROUP BY",
+      "status": "pass",
+      "duration_ms": 854.9,
+      "details": {
+        "compared_rows": 10,
+        "mismatches": [],
+        "top_merchant": [
+          "1799189980464955940",
+          76973,
+          1086900.85
+        ]
+      }
+    },
+    {
+      "case_id": "RC-04",
+      "name": "summarize_transactions(month, 2019) vs SQL date_format() for all 12 months",
+      "status": "pass",
+      "duration_ms": 874.4,
+      "details": {
+        "months": 12,
+        "mismatches": [],
+        "unexpected_months": []
+      }
+    },
+    {
+      "case_id": "RC-05",
+      "name": "summarize_transactions(chip, 2019): channel counts sum to the SQL year total",
+      "status": "pass",
+      "duration_ms": 485.9,
+      "details": {
+        "channels": {
+          "Chip Transaction": 1217608,
+          "Swipe Transaction": 292377,
+          "Online Transaction": 213953
+        },
+        "sum_of_groups": 1723938,
+        "sql_year_count": 1723938
+      }
+    },
+    {
+      "case_id": "RC-06",
+      "name": "get_cardholder_profile(1455) statistics vs SQL aggregates",
+      "status": "pass",
+      "duration_ms": 1692.4,
+      "details": {
+        "checks": {
+          "transaction_count": true,
+          "cards": true,
+          "merchants": true,
+          "net_spend": true,
+          "first_activity": true,
+          "last_activity": true
+        },
+        "tool": {
+          "transaction_count": 7745,
+          "cards": 3,
+          "merchants": 211,
+          "net_spend": 256841.2,
+          "purchases": 280903.2,
+          "refunds_or_credits": -24062.0,
+          "first_activity": "2012-10-01 04:19:00",
+          "last_activity": "2020-02-28 11:20:00"
+        },
+        "sql": {
+          "n": 7745,
+          "cards": 3,
+          "m": 211,
+          "s": 256841.2,
+          "f": "2012-10-01 04:19:00",
+          "l": "2020-02-28 11:20:00"
+        }
+      }
+    },
+    {
+      "case_id": "RC-07",
+      "name": "search_transactions(user 1455, 2019): returned/truncated vs SQL count",
+      "status": "pass",
+      "duration_ms": 938.5,
+      "details": {
+        "sql_count": 1129,
+        "returned": 200,
+        "truncated": true
+      }
+    },
+    {
+      "case_id": "RC-08",
+      "name": "generate_transaction_report(10000056) fields vs SQL row",
+      "status": "pass",
+      "duration_ms": 2264.5,
+      "details": {
+        "checks": {
+          "found": true,
+          "user_id": true,
+          "merchant_id": true,
+          "amount": true,
+          "transaction_time": true,
+          "source_row_number": true
+        }
+      }
+    },
+    {
+      "case_id": "RC-09",
+      "name": "merchant_relationships(1455): seed merchants and shared-merchant counts vs SQL",
+      "status": "pass",
+      "duration_ms": 2569.1,
+      "details": {
+        "seed_merchants_match": true,
+        "related_users_checked": 3,
+        "mismatches": []
+      }
+    },
+    {
+      "case_id": "RC-10",
+      "name": "ask_transactions('How many transactions were there in 2019?') vs SQL count",
+      "status": "pass",
+      "duration_ms": 2038.7,
+      "details": {
+        "generated_sql": "SELECT COUNT(*) AS transaction_count\nFROM workspace.default.card_transaction_mcp_clean\nWHERE transaction_time >= TIMESTAMP '2019-01-01 00:00:00'\n  AND transaction_time < TIMESTAMP '2020-01-01 00:00:00'",
+        "records": [
+          {
+            "transaction_count": 1723938
+          }
+        ],
+        "sql_year_count": 1723938
+      }
+    }
+  ],
+  "metrics": {
+    "sample_entities": {
+      "user_id": "1455",
+      "card_id": "0",
+      "card_key": "1455::0",
+      "transaction_id": "10000056",
+      "merchant_id": "1799189980464955940"
+    },
+    "case_counts": {
+      "pass": 10,
+      "fail": 0,
+      "error": 0,
+      "warn": 0,
+      "skipped": 0,
+      "manual_review": 0
+    }
+  },
+  "notes": []
+}

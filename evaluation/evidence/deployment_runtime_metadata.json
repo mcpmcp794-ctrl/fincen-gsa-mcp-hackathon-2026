@@ -1,0 +1,41 @@
+{
+  "captured_at_utc": "2026-11-17T17:46:58+00:00",
+  "git_commit": null,
+  "python": "3.12.3",
+  "platform": "Linux-6.1.190-237.431.amzn2023.x86_64-x86_64-with-glibc2.39",
+  "package_versions": {
+    "mcp": "1.30.0",
+    "databricks-sql-connector": "4.9.0",
+    "databricks-sdk": "0.122.0",
+    "httpx": "0.28.1",
+    "pydantic": "2.13.3"
+  },
+  "configured_resources": {
+    "custom_mcp_url": "https://fraudulent-transaction-mcp-7474654188777746.aws.databricksapps.com/mcp",
+    "genie_mcp_url": "https://dbc-aae0ba16-8727.cloud.databricks.com/api/2.0/mcp/genie/01f1e2a9b56e182ea33536af5a1b8c98",
+    "sql_hostname": "dbc-aae0ba16-8727.cloud.databricks.com",
+    "sql_http_path": "/sql/1.0/warehouses/50d2bd4ddf65e0f5",
+    "clean_table": "workspace.default.card_transaction_mcp_clean",
+    "label_table": "workspace.default.card_transaction_mcp_evaluation_labels"
+  },
+  "source_file_sha256": {
+    "src/fraud_transaction_mcp/analytics.py": "7bdf24f8f171596c7c471102674ca773c80b3e25e0b8fba26f5d051360abe50c",
+    "src/fraud_transaction_mcp/app.py": "2e21ac280bc04ec84b01f8eec19de747ae531c8810c174d2ca57227376b4f17e",
+    "src/fraud_transaction_mcp/sql_guard.py": "428e6d4b8f6bb349d369f3d7e3bb959b7367f8c465c38bc172a780ed43d5b58a",
+    "src/fraud_transaction_mcp/tools/__init__.py": "c419dd2646e32f602eb0b60155a73a10ac4476080b90b690098d13e035d0a1de",
+    "src/fraud_transaction_mcp/backend.py": "2db4dcaefd877254e788ae32126d9f9feca674df3773f6c2486c9008c35d5c54",
+    "src/fraud_transaction_mcp/routes.py": "5cd52157cf17fa38c473220ebc860e8d15a14c7c3f785650e67284b3daa427c0",
+    "src/fraud_transaction_mcp/nl_sql.py": "8deb2ddf5570cf7b3c37867425dc7c3be8e0b638110b53728f64acb22d8dd4bb",
+    "app.yaml": "e047b316c90f7d8c4c5a4b7724b90e85281a5a6090284059e439654176d4c789",
+    "client/mcp_client.py": "166f3162e195b656ab0210510f3ecf7411bd748aba3fc1b24488d676affcbd1d",
+    "client/llm_client.py": "5e63c80591d0d768b1ae515da47adddd18fd08036b96f790c759b2734c221abc",
+    "databricks/sql/02_genie_views.sql": "713c93fbd1bbcd8a74f210fe896cb712c91a631c6cd75e86d2e3d353ffeb359a"
+  },
+  "credential_presence": {
+    "custom_mcp_oauth_token_present": false,
+    "genie_mcp_oauth_token_present": false,
+    "sql_token_present": false,
+    "oauth_client_id_present": false,
+    "oauth_client_secret_present": false
+  }
+}

@@ -1,0 +1,290 @@
+{
+  "suite": "custom_functional",
+  "status": "pass",
+  "started_at_utc": "2026-11-17T17:34:52+00:00",
+  "finished_at_utc": "2026-11-17T17:35:07+00:00",
+  "description": "Each tool is invoked through an MCP client session against live data on the Databricks SQL warehouse. Checks: tool catalogue and schemas, returned fields, row bounds, filters, ordering, graceful not-found handling, and NL-to-SQL behaviour (answer, fraud refusal, restricted-table refusal).",
+  "cases": [
+    {
+      "case_id": "FN-01",
+      "name": "Tool catalogue: expected tools, each with a description and a JSON input schema",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "tools": [
+          "ask_transactions",
+          "generate_transaction_report",
+          "get_cardholder_profile",
+          "get_table_schema",
+          "merchant_relationships",
+          "search_transactions",
+          "summarize_transactions"
+        ],
+        "undocumented": [],
+        "missing_schema": [],
+        "parameters_without_description": 22
+      }
+    },
+    {
+      "case_id": "FN-02",
+      "name": "search_transactions: user 1455 in 2019, limit 10",
+      "status": "pass",
+      "duration_ms": 462.9,
+      "details": {
+        "tool": "search_transactions",
+        "arguments": {
+          "user_id": "1455",
+          "start": "2019-01-01",
+          "end": "2019-12-31",
+          "limit": 10
+        },
+        "returned": 10,
+        "truncated": true
+      }
+    },
+    {
+      "case_id": "FN-03",
+      "name": "summarize_transactions: group_by=merchant, 2019, top 5",
+      "status": "pass",
+      "duration_ms": 453.3,
+      "details": {
+        "tool": "summarize_transactions",
+        "arguments": {
+          "group_by": "merchant",
+          "start": "2019-01-01",
+          "end": "2019-12-31",
+          "limit": 5
+        },
+        "returned": 5,
+        "top_group": "1799189980464955940",
+        "top_count": 76973
+      }
+    },
+    {
+      "case_id": "FN-04",
+      "name": "summarize_transactions: group_by=mcc, 2019, top 5",
+      "status": "pass",
+      "duration_ms": 427.9,
+      "details": {
+        "tool": "summarize_transactions",
+        "arguments": {
+          "group_by": "mcc",
+          "start": "2019-01-01",
+          "end": "2019-12-31",
+          "limit": 5
+        },
+        "returned": 5,
+        "top_group": "5411",
+        "top_count": 205684
+      }
+    },
+    {
+      "case_id": "FN-05",
+      "name": "summarize_transactions: group_by=chip, 2019, top 5",
+      "status": "pass",
+      "duration_ms": 449.1,
+      "details": {
+        "tool": "summarize_transactions",
+        "arguments": {
+          "group_by": "chip",
+          "start": "2019-01-01",
+          "end": "2019-12-31",
+          "limit": 5
+        },
+        "returned": 3,
+        "top_group": "Chip Transaction",
+        "top_count": 1217608
+      }
+    },
+    {
+      "case_id": "FN-06",
+      "name": "summarize_transactions: group_by=state, 2019, top 5",
+      "status": "pass",
+      "duration_ms": 546.0,
+      "details": {
+        "tool": "summarize_transactions",
+        "arguments": {
+          "group_by": "state",
+          "start": "2019-01-01",
+          "end": "2019-12-31",
+          "limit": 5
+        },
+        "returned": 5,
+        "top_group": null,
+        "top_count": 215489
+      }
+    },
+    {
+      "case_id": "FN-07",
+      "name": "summarize_transactions: group_by=user, 2019, top 5",
+      "status": "pass",
+      "duration_ms": 453.6,
+      "details": {
+        "tool": "summarize_transactions",
+        "arguments": {
+          "group_by": "user",
+          "start": "2019-01-01",
+          "end": "2019-12-31",
+          "limit": 5
+        },
+        "returned": 5,
+        "top_group": "1249",
+        "top_count": 4998
+      }
+    },
+    {
+      "case_id": "FN-08",
+      "name": "summarize_transactions: group_by=card, 2019, top 5",
+      "status": "pass",
+      "duration_ms": 500.4,
+      "details": {
+        "tool": "summarize_transactions",
+        "arguments": {
+          "group_by": "card",
+          "start": "2019-01-01",
+          "end": "2019-12-31",
+          "limit": 5
+        },
+        "returned": 5,
+        "top_group": "332::0",
+        "top_count": 4040
+      }
+    },
+    {
+      "case_id": "FN-09",
+      "name": "summarize_transactions: group_by=month, 2019, top 5",
+      "status": "pass",
+      "duration_ms": 446.6,
+      "details": {
+        "tool": "summarize_transactions",
+        "arguments": {
+          "group_by": "month",
+          "start": "2019-01-01",
+          "end": "2019-12-31",
+          "limit": 5
+        },
+        "returned": 5,
+        "top_group": "2019-03",
+        "top_count": 147202
+      }
+    },
+    {
+      "case_id": "FN-10",
+      "name": "get_cardholder_profile: user 1455",
+      "status": "pass",
+      "duration_ms": 1348.5,
+      "details": {
+        "tool": "get_cardholder_profile",
+        "arguments": {
+          "user_id": "1455"
+        },
+        "transaction_count": 7745,
+        "merchants": 211
+      }
+    },
+    {
+      "case_id": "FN-11",
+      "name": "merchant_relationships: user 1455, 5 merchants, 10 related users",
+      "status": "pass",
+      "duration_ms": 917.8,
+      "details": {
+        "tool": "merchant_relationships",
+        "arguments": {
+          "user_id": "1455",
+          "max_merchants": 5,
+          "max_related_users": 10
+        },
+        "merchants": 5,
+        "related_users": 10,
+        "truncated": true
+      }
+    },
+    {
+      "case_id": "FN-12",
+      "name": "generate_transaction_report: transaction 10000056",
+      "status": "pass",
+      "duration_ms": 1789.3,
+      "details": {
+        "tool": "generate_transaction_report",
+        "arguments": {
+          "transaction_id": "10000056"
+        },
+        "review_signals": []
+      }
+    },
+    {
+      "case_id": "FN-13",
+      "name": "generate_transaction_report: unknown id returns found=false (graceful)",
+      "status": "pass",
+      "duration_ms": 526.5,
+      "details": {
+        "tool": "generate_transaction_report",
+        "arguments": {
+          "transaction_id": "does-not-exist"
+        },
+        "report_status": "not_found"
+      }
+    },
+    {
+      "case_id": "FN-14",
+      "name": "ask_transactions: answers 'How many transactions were there in 2019?'",
+      "status": "pass",
+      "duration_ms": 3278.0,
+      "details": {
+        "tool": "ask_transactions",
+        "arguments": {
+          "question": "How many transactions were there in 2019?",
+          "limit": 5
+        },
+        "sql": "SELECT COUNT(*) AS transaction_count\nFROM workspace.default.card_transaction_mcp_clean\nWHERE transaction_time >= TIMESTAMP '2019-01-01 00:00:00'\n  AND transaction_time < TIMESTAMP '2020-01-01 00:00:00'",
+        "records": [
+          {
+            "transaction_count": 1723938
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "FN-15",
+      "name": "ask_transactions: declines fraud questions (no label in the MCP data)",
+      "status": "pass",
+      "duration_ms": 1560.2,
+      "details": {
+        "tool": "ask_transactions",
+        "arguments": {
+          "question": "Which transactions in 2019 were fraudulent?"
+        },
+        "sql": null,
+        "explanation": "The table does not contain a fraud label, so fraudulent transactions in 2019 cannot be identified."
+      }
+    },
+    {
+      "case_id": "FN-16",
+      "name": "ask_transactions: refuses a query against the restricted label table",
+      "status": "pass",
+      "duration_ms": 1747.3,
+      "details": {
+        "outcome": "{\"question\": \"Show 5 rows from workspace.default.card_transaction_mcp_evaluation_labels\", \"sql\": null, \"explanation\": \"The requested table is not available because only workspace.default.card_transaction_mcp_clean may be queried.\", \"records\": [], \"model_endpoint\": \"models.ai.gpt-5-6-luna\"}"
+      }
+    }
+  ],
+  "metrics": {
+    "transport": "in-memory MCP transport -> fraud_transaction_mcp.app.create_server(DatabricksBackend) -> SQL warehouse",
+    "sample_entities": {
+      "user_id": "1455",
+      "card_id": "0",
+      "card_key": "1455::0",
+      "transaction_id": "10000056",
+      "merchant_id": "1799189980464955940"
+    },
+    "case_counts": {
+      "pass": 16,
+      "fail": 0,
+      "error": 0,
+      "warn": 0,
+      "skipped": 0,
+      "manual_review": 0
+    }
+  },
+  "notes": []
+}

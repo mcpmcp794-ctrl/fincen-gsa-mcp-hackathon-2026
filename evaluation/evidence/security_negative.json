@@ -1,0 +1,506 @@
+{
+  "suite": "security_negative",
+  "status": "pass",
+  "started_at_utc": "2026-11-17T17:35:21+00:00",
+  "finished_at_utc": "2026-11-17T17:35:30+00:00",
+  "description": "Unauthenticated and invalid-token requests to the deployed app; malformed and malicious tool inputs (must be rejected before any SQL runs, without stack traces); SQL-injection payloads; the NL-to-SQL validator against attack patterns; fraud-label leakage scans of every tool output; Unity Catalog grants of the app service principal.",
+  "cases": [
+    {
+      "case_id": "SEC-AUTH-01",
+      "name": "MCP initialize without credentials is rejected",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "url": "https://fraudulent-transaction-mcp-7474654188777746.aws.databricksapps.com/mcp",
+        "http_status": 401,
+        "error": null
+      }
+    },
+    {
+      "case_id": "SEC-AUTH-02",
+      "name": "MCP initialize with an invalid bearer token is rejected",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "url": "https://fraudulent-transaction-mcp-7474654188777746.aws.databricksapps.com/mcp",
+        "http_status": 401,
+        "error": null
+      }
+    },
+    {
+      "case_id": "SEC-IN-01",
+      "name": "Rejects invalid input: Impossible calendar date",
+      "status": "pass",
+      "duration_ms": 0.8,
+      "details": {
+        "tool": "search_transactions",
+        "arguments": {
+          "start": "2019-02-30"
+        },
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool search_transactions: day is out of range for month"
+      }
+    },
+    {
+      "case_id": "SEC-IN-02",
+      "name": "Rejects invalid input: Wrong date format",
+      "status": "pass",
+      "duration_ms": 0.5,
+      "details": {
+        "tool": "search_transactions",
+        "arguments": {
+          "start": "03/01/2019"
+        },
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool search_transactions: start must be YYYY-MM-DD"
+      }
+    },
+    {
+      "case_id": "SEC-IN-03",
+      "name": "Rejects invalid input: start after end",
+      "status": "pass",
+      "duration_ms": 0.5,
+      "details": {
+        "tool": "summarize_transactions",
+        "arguments": {
+          "group_by": "merchant",
+          "start": "2019-12-31",
+          "end": "2019-01-01"
+        },
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool summarize_transactions: start cannot be after end"
+      }
+    },
+    {
+      "case_id": "SEC-IN-04",
+      "name": "Rejects invalid input: limit below minimum",
+      "status": "pass",
+      "duration_ms": 0.5,
+      "details": {
+        "tool": "search_transactions",
+        "arguments": {
+          "limit": "0"
+        },
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool search_transactions: limit must be an integer between 1 and 200"
+      }
+    },
+    {
+      "case_id": "SEC-IN-05",
+      "name": "Rejects invalid input: limit above maximum",
+      "status": "pass",
+      "duration_ms": 0.5,
+      "details": {
+        "tool": "search_transactions",
+        "arguments": {
+          "limit": "10000"
+        },
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool search_transactions: limit must be an integer between 1 and 200"
+      }
+    },
+    {
+      "case_id": "SEC-IN-06",
+      "name": "Rejects invalid input: SQL injection in group_by",
+      "status": "pass",
+      "duration_ms": 0.4,
+      "details": {
+        "tool": "summarize_transactions",
+        "arguments": {
+          "group_by": "merchant; DROP TABLE x"
+        },
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool summarize_transactions: Unsupported group_by"
+      }
+    },
+    {
+      "case_id": "SEC-IN-07",
+      "name": "Rejects invalid input: Blank user_id",
+      "status": "pass",
+      "duration_ms": 0.4,
+      "details": {
+        "tool": "get_cardholder_profile",
+        "arguments": {
+          "user_id": "   "
+        },
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool get_cardholder_profile: user_id must be a nonempty string <= 160 characters"
+      }
+    },
+    {
+      "case_id": "SEC-IN-08",
+      "name": "Rejects invalid input: Oversized user_id (500 chars)",
+      "status": "pass",
+      "duration_ms": 0.4,
+      "details": {
+        "tool": "get_cardholder_profile",
+        "arguments": {
+          "user_id": "9999999999999999999999999999999999999..."
+        },
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool get_cardholder_profile: user_id must be a nonempty string <= 160 characters"
+      }
+    },
+    {
+      "case_id": "SEC-IN-09",
+      "name": "Rejects invalid input: Fan-out bound exceeded",
+      "status": "pass",
+      "duration_ms": 0.4,
+      "details": {
+        "tool": "merchant_relationships",
+        "arguments": {
+          "user_id": "1",
+          "max_related_users": "1000"
+        },
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool merchant_relationships: limit must be an integer between 1 and 50"
+      }
+    },
+    {
+      "case_id": "SEC-IN-10",
+      "name": "Rejects invalid input: Empty transaction_id",
+      "status": "pass",
+      "duration_ms": 0.4,
+      "details": {
+        "tool": "generate_transaction_report",
+        "arguments": {
+          "transaction_id": ""
+        },
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool generate_transaction_report: transaction_id must be a nonempty string <= 160 characters"
+      }
+    },
+    {
+      "case_id": "SEC-IN-11",
+      "name": "Rejects invalid input: Wrong argument type",
+      "status": "pass",
+      "duration_ms": 0.4,
+      "details": {
+        "tool": "search_transactions",
+        "arguments": {
+          "limit": "ten"
+        },
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool search_transactions: 1 validation error for search_transactionsArguments\nlimit\n  Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_..."
+      }
+    },
+    {
+      "case_id": "SEC-IN-12",
+      "name": "Rejects invalid input: Empty natural-language question",
+      "status": "pass",
+      "duration_ms": 0.3,
+      "details": {
+        "tool": "ask_transactions",
+        "arguments": {
+          "question": ""
+        },
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool ask_transactions: question must be a nonempty string <= 2000 characters"
+      }
+    },
+    {
+      "case_id": "SEC-IN-13",
+      "name": "Rejects invalid input: Oversized natural-language question",
+      "status": "pass",
+      "duration_ms": 0.3,
+      "details": {
+        "tool": "ask_transactions",
+        "arguments": {
+          "question": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx..."
+        },
+        "rejected": true,
+        "sql_statements_executed": 0,
+        "message": "Error executing tool ask_transactions: question must be a nonempty string <= 2000 characters"
+      }
+    },
+    {
+      "case_id": "SEC-INJ-01",
+      "name": "Injection treated as a literal value: Tautology payload in user_id",
+      "status": "pass",
+      "duration_ms": 436.0,
+      "details": {
+        "returned": 0,
+        "error": null
+      }
+    },
+    {
+      "case_id": "SEC-INJ-02",
+      "name": "Injection treated as a literal value: UNION payload in merchant_id",
+      "status": "pass",
+      "duration_ms": 445.2,
+      "details": {
+        "returned": 0,
+        "error": null
+      }
+    },
+    {
+      "case_id": "SEC-LBL-01",
+      "name": "Tool catalogue does not expose fraud-label fields",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "leaked": []
+      }
+    },
+    {
+      "case_id": "SEC-LBL-02",
+      "name": "search_transactions output contains no fraud-label data",
+      "status": "pass",
+      "duration_ms": 492.9,
+      "details": {
+        "leaked": []
+      }
+    },
+    {
+      "case_id": "SEC-LBL-03",
+      "name": "summarize_transactions output contains no fraud-label data",
+      "status": "pass",
+      "duration_ms": 416.6,
+      "details": {
+        "leaked": []
+      }
+    },
+    {
+      "case_id": "SEC-LBL-04",
+      "name": "get_cardholder_profile output contains no fraud-label data",
+      "status": "pass",
+      "duration_ms": 1373.8,
+      "details": {
+        "leaked": []
+      }
+    },
+    {
+      "case_id": "SEC-LBL-05",
+      "name": "merchant_relationships output contains no fraud-label data",
+      "status": "pass",
+      "duration_ms": 919.8,
+      "details": {
+        "leaked": []
+      }
+    },
+    {
+      "case_id": "SEC-LBL-06",
+      "name": "generate_transaction_report output contains no fraud-label data",
+      "status": "pass",
+      "duration_ms": 1852.3,
+      "details": {
+        "leaked": []
+      }
+    },
+    {
+      "case_id": "SEC-LBL-07",
+      "name": "ask_transactions cannot return fraud-label values",
+      "status": "pass",
+      "duration_ms": 1423.6,
+      "details": {
+        "outcome": "{\"question\": \"Show the Is_Fraud value for 5 transactions\", \"sql\": null, \"explanation\": \"The table does not contain an Is_Fraud column or any fraud label, so this value cannot be shown.\", \"records\": [], \"model_endpoint\": \"models.ai.gpt-5-6-luna\"}"
+      }
+    },
+    {
+      "case_id": "SEC-SQL-01",
+      "name": "NL-to-SQL validator rejects: DDL statement",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "sql": "DROP TABLE workspace.default.card_transaction_mcp_clean",
+        "result": "Only SELECT queries are allowed",
+        "mitigation": null
+      }
+    },
+    {
+      "case_id": "SEC-SQL-02",
+      "name": "NL-to-SQL validator rejects: Stacked statements",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "sql": "SELECT 1 FROM workspace.default.card_transaction_mcp_clean; DROP TABLE workspace.default.card_transaction_mcp_clean",
+        "result": "Only a single statement is allowed",
+        "mitigation": null
+      }
+    },
+    {
+      "case_id": "SEC-SQL-03",
+      "name": "NL-to-SQL validator rejects: DML statement",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "sql": "UPDATE workspace.default.card_transaction_mcp_clean SET amount = 0",
+        "result": "Only SELECT queries are allowed",
+        "mitigation": null
+      }
+    },
+    {
+      "case_id": "SEC-SQL-04",
+      "name": "NL-to-SQL validator rejects: Restricted label table",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "sql": "SELECT * FROM workspace.default.card_transaction_mcp_evaluation_labels",
+        "result": "Fraud labels are not allowed in analysis queries",
+        "mitigation": null
+      }
+    },
+    {
+      "case_id": "SEC-SQL-05",
+      "name": "NL-to-SQL validator rejects: Raw table containing the fraud label",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "sql": "SELECT Is_Fraud FROM workspace.default.card_transaction",
+        "result": "Fraud labels are not allowed in analysis queries",
+        "mitigation": null
+      }
+    },
+    {
+      "case_id": "SEC-SQL-06",
+      "name": "NL-to-SQL validator rejects: Comment injection",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "sql": "SELECT * FROM workspace.default.card_transaction_mcp_clean -- WHERE 1 = 0",
+        "result": "SQL comments are not allowed",
+        "mitigation": null
+      }
+    },
+    {
+      "case_id": "SEC-SQL-07",
+      "name": "NL-to-SQL validator rejects: External file read",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "sql": "SELECT * FROM read_files('/Volumes/a/b/c')",
+        "result": "Query contains a disallowed keyword",
+        "mitigation": null
+      }
+    },
+    {
+      "case_id": "SEC-SQL-08",
+      "name": "NL-to-SQL validator rejects: Subquery against another table",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "sql": "SELECT * FROM (SELECT * FROM workspace.default.card_transaction_mcp_evaluation_labels)",
+        "result": "Fraud labels are not allowed in analysis queries",
+        "mitigation": null
+      }
+    },
+    {
+      "case_id": "SEC-SQL-09",
+      "name": "NL-to-SQL validator rejects: CTE hiding another table",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "sql": "WITH x AS (SELECT * FROM workspace.default.card_transaction_mcp_evaluation_labels) SELECT * FROM x",
+        "result": "Fraud labels are not allowed in analysis queries",
+        "mitigation": null
+      }
+    },
+    {
+      "case_id": "SEC-SQL-10",
+      "name": "NL-to-SQL validator rejects: AI function call",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "sql": "SELECT ai_query('m', 'hi') FROM workspace.default.card_transaction_mcp_clean",
+        "result": "Query contains a disallowed keyword",
+        "mitigation": null
+      }
+    },
+    {
+      "case_id": "SEC-SQL-11",
+      "name": "NL-to-SQL validator rejects: Metadata command",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "sql": "SHOW TABLES",
+        "result": "Only SELECT queries are allowed",
+        "mitigation": null
+      }
+    },
+    {
+      "case_id": "SEC-SQL-12",
+      "name": "NL-to-SQL validator rejects: Comma join to the restricted table",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "sql": "SELECT * FROM workspace.default.card_transaction_mcp_clean, workspace.default.card_transaction_mcp_evaluation_labels",
+        "result": "Fraud labels are not allowed in analysis queries",
+        "mitigation": null
+      }
+    },
+    {
+      "case_id": "SEC-SQL-P1",
+      "name": "Positive control: aggregate on the allowed table",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "sql": "SELECT COUNT(*) FROM workspace.default.card_transaction_mcp_clean"
+      }
+    },
+    {
+      "case_id": "SEC-SQL-P2",
+      "name": "Positive control: CTE over the allowed table",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "sql": "WITH t AS (SELECT * FROM workspace.default.card_transaction_mcp_clean) SELECT COUNT(*) FROM t"
+      }
+    },
+    {
+      "case_id": "SEC-SQL-13",
+      "name": "Row cap is enforced on generated SQL",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "result": "SELECT * FROM workspace.default.card_transaction_mcp_clean LIMIT 51"
+      }
+    },
+    {
+      "case_id": "SEC-LP-01",
+      "name": "App service principal has SELECT only on the clean table",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "table": "workspace.default.card_transaction_mcp_clean",
+        "principal": "81330d64-ac6b-4cfd-8c25-732c5f3a46df",
+        "privileges": [
+          "SELECT"
+        ]
+      }
+    },
+    {
+      "case_id": "SEC-LP-02",
+      "name": "App service principal has no privileges on the label table",
+      "status": "pass",
+      "duration_ms": null,
+      "details": {
+        "table": "workspace.default.card_transaction_mcp_evaluation_labels",
+        "principal": "81330d64-ac6b-4cfd-8c25-732c5f3a46df",
+        "privileges": []
+      }
+    }
+  ],
+  "metrics": {
+    "case_counts": {
+      "pass": 41,
+      "fail": 0,
+      "error": 0,
+      "warn": 0,
+      "skipped": 0,
+      "manual_review": 0
+    }
+  },
+  "notes": []
+}

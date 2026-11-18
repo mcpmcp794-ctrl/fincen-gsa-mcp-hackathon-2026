@@ -1,0 +1,129 @@
+{
+  "suite": "genie_benchmark",
+  "status": "pass",
+  "started_at_utc": "2026-11-17T17:36:09+00:00",
+  "finished_at_utc": "2026-11-17T17:37:19+00:00",
+  "description": "Benchmark questions are sent to each Genie space (the same spaces exposed through the managed Genie MCP server). A numeric value in Genie's result rows must match reference SQL run on the raw table; answers without numbers are left for manual review.",
+  "cases": [
+    {
+      "case_id": "GB-01",
+      "name": "[behavioral] How many transactions were there in 2019?",
+      "status": "pass",
+      "duration_ms": 13837.2,
+      "details": {
+        "space_id": "01f1e2a9b56e182ea33536af5a1b8c98",
+        "reference_sql": "SELECT COUNT(*) FROM workspace.default.card_transaction WHERE Year = 2019",
+        "reference_value": 1723938.0,
+        "genie_sql": "SELECT COUNT(*) AS `transaction_count`\nFROM `workspace`.`default`.`card_transaction_mcp_clean`\nWHERE YEAR(`transaction_time`) = 2019",
+        "genie_rows": [
+          [
+            "1723938"
+          ]
+        ],
+        "genie_text": "Using **Transaction Count** for the date range **2019-01-01 to 2019-12-31**, there were **1,723,938 transactions** in **2019**. Since the result contains **1 row**, the full answer shown by the data is **1,723,938 total transactions** for 2019.",
+        "message_status": "COMPLETED",
+        "rows_error": null
+      }
+    },
+    {
+      "case_id": "GB-02",
+      "name": "[behavioral] How many distinct cardholders made at least one transaction in 2019?",
+      "status": "pass",
+      "duration_ms": 13062.5,
+      "details": {
+        "space_id": "01f1e2a9b56e182ea33536af5a1b8c98",
+        "reference_sql": "SELECT COUNT(DISTINCT User) FROM workspace.default.card_transaction WHERE Year = 2019",
+        "reference_value": 1579.0,
+        "genie_sql": "SELECT COUNT(DISTINCT `user_id`) AS `distinct_cardholders`\nFROM `workspace`.`default`.`card_transaction_mcp_clean`\nWHERE `transaction_time` >= TIMESTAMP('2019-01-01 00:00:00')\n  AND `transaction_time` < TIMESTAMP('2020-01-01 00:00:00')",
+        "genie_rows": [
+          [
+            "1579"
+          ]
+        ],
+        "genie_text": "Using transactions from **2019-01-01** through **2019-12-31**, **1,579** distinct cardholders made at least one transaction in 2019.",
+        "message_status": "COMPLETED",
+        "rows_error": null
+      }
+    },
+    {
+      "case_id": "GB-03",
+      "name": "[behavioral] How many online transactions were there in 2019?",
+      "status": "pass",
+      "duration_ms": 12508.9,
+      "details": {
+        "space_id": "01f1e2a9b56e182ea33536af5a1b8c98",
+        "reference_sql": "SELECT COUNT(*) FROM workspace.default.card_transaction WHERE Year = 2019 AND `Use Chip` = 'Online Transaction'",
+        "reference_value": 213953.0,
+        "genie_sql": "SELECT COUNT(*) AS `transaction_count` FROM `workspace`.`default`.`card_transaction_mcp_clean` WHERE `use_chip` = 'Online Transaction' AND `transaction_time` >= TIMESTAMP('2019-01-01 00:00:00') AND `transaction_time` < TIMESTAMP('2020-01-01 00:00:00')",
+        "genie_rows": [
+          [
+            "213953"
+          ]
+        ],
+        "genie_text": "Using **online transactions** only and the date range **2019-01-01 through 2019-12-31**, the total transaction count was **213,953**. In this result set, **213,953** is both the full-year total and the only reported value for 2019.",
+        "message_status": "COMPLETED",
+        "rows_error": null
+      }
+    },
+    {
+      "case_id": "GB-04",
+      "name": "[fraud] How many transactions were labeled as fraud in 2019?",
+      "status": "pass",
+      "duration_ms": 13428.9,
+      "details": {
+        "space_id": "01f1dc44f22413fe82320128338353b5",
+        "reference_sql": "SELECT COUNT(*) FROM workspace.default.card_transaction WHERE Year = 2019 AND Is_Fraud = 'Yes'",
+        "reference_value": 2087.0,
+        "genie_sql": "SELECT COUNT(*) AS `fraud_transaction_count`\nFROM `workspace`.`default`.`card_transaction`\nWHERE `Year` = 2019\n  AND `Is_Fraud` = 'Yes'",
+        "genie_rows": [
+          [
+            "2087"
+          ]
+        ],
+        "genie_text": "There were **2,087** transactions labeled as fraud in **2019**. Since the result contains one total count, **2,087** is the full fraud transaction total for 2019 in the data returned.",
+        "message_status": "COMPLETED",
+        "rows_error": null
+      }
+    },
+    {
+      "case_id": "GB-05",
+      "name": "[fraud] What percentage of transactions in 2019 were fraudulent?",
+      "status": "pass",
+      "duration_ms": 12585.0,
+      "details": {
+        "space_id": "01f1dc44f22413fe82320128338353b5",
+        "reference_sql": "SELECT 100.0 * AVG(CASE WHEN Is_Fraud = 'Yes' THEN 1 ELSE 0 END) FROM workspace.default.card_transaction WHERE Year = 2019",
+        "reference_value": 0.12106003812202062,
+        "genie_sql": "SELECT try_divide(100.0 * COUNT(CASE WHEN `Is_Fraud` = 'Yes' THEN 1 END),COUNT(*)) AS fraud_percentage_2019 FROM `workspace`.`default`.`card_transaction` WHERE `Year` = 2019",
+        "genie_rows": [
+          [
+            "0.12106003812202"
+          ]
+        ],
+        "genie_text": "In **2019**, **0.12106003812202%** of transactions were fraudulent. Based on the single result returned, the fraud rate in 2019 was **about 0.12%**, which indicates fraud was very rare that year.",
+        "message_status": "COMPLETED",
+        "rows_error": null
+      }
+    }
+  ],
+  "metrics": {
+    "genie_mcp_url": "https://dbc-aae0ba16-8727.cloud.databricks.com/api/2.0/mcp/genie/01f1e2a9b56e182ea33536af5a1b8c98",
+    "latency": {
+      "n": 5,
+      "min_ms": 12508.9,
+      "p50_ms": 13062.5,
+      "p95_ms": 13755.6,
+      "mean_ms": 13084.5,
+      "max_ms": 13837.2
+    },
+    "case_counts": {
+      "pass": 5,
+      "fail": 0,
+      "error": 0,
+      "warn": 0,
+      "skipped": 0,
+      "manual_review": 0
+    }
+  },
+  "notes": []
+}

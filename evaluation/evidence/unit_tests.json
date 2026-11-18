@@ -1,0 +1,55 @@
+{
+  "suite": "unit_tests",
+  "status": "pass",
+  "started_at_utc": "2026-11-17T17:34:42+00:00",
+  "finished_at_utc": "2026-11-17T17:34:52+00:00",
+  "description": "pytest suites that need no workspace: tests/ (analytics logic, backend helpers, column contract, data-preparation and Genie-view static checks) and client/tests/ (MCP client against the real server over streamable HTTP with an in-memory SQLite backend, LLM stubbed).",
+  "cases": [
+    {
+      "case_id": "UT-01",
+      "name": "pytest tests: server analytics, backend, contract and static checks",
+      "status": "pass",
+      "duration_ms": 4379.7,
+      "details": {
+        "tests": 99,
+        "passed": 98,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 1,
+        "failed_tests": []
+      }
+    },
+    {
+      "case_id": "UT-02",
+      "name": "pytest client/tests: MCP client and server over streamable HTTP (SQLite, stubbed LLM)",
+      "status": "pass",
+      "duration_ms": 5221.7,
+      "details": {
+        "tests": 32,
+        "passed": 32,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "failed_tests": []
+      }
+    }
+  ],
+  "metrics": {
+    "totals": {
+      "tests": 131,
+      "passed": 130,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "case_counts": {
+      "pass": 2,
+      "fail": 0,
+      "error": 0,
+      "warn": 0,
+      "skipped": 0,
+      "manual_review": 0
+    }
+  },
+  "notes": []
+}

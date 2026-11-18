@@ -1,0 +1,10 @@
+suite,title,status,pass,fail,error,warn,skipped,manual_review
+preflight,Preflight readiness,pass,8,0,0,0,0,0
+unit_tests,Offline unit and contract tests,pass,2,0,0,0,0,0
+custom_functional,Custom MCP functional tests,pass,16,0,0,0,0,0
+sql_reconciliation,SQL reconciliation,pass,10,0,0,0,0,0
+security_negative,Security and negative tests,pass,41,0,0,0,0,0
+performance,Performance,pass,7,0,0,0,0,0
+genie_benchmark,Genie benchmark,pass,5,0,0,0,0,0
+hybrid_routing,Hybrid routing worksheet,manual_review,0,0,0,0,0,10
+llm_judge,LLM-as-judge agent critique,pass,11,0,0,0,0,0

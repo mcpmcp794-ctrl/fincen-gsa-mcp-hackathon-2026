@@ -1,0 +1,110 @@
+{
+  "generated_at_utc": "2026-11-17T17:46:59+00:00",
+  "files": [
+    {
+      "path": "evaluation/evidence/custom_functional.json",
+      "size_bytes": 8404,
+      "sha256": "260f3b5a5f1947293b3280c6098458520740ad2283e43d0a7a2e098f71665804"
+    },
+    {
+      "path": "evaluation/evidence/deployment_runtime_metadata.json",
+      "size_bytes": 2309,
+      "sha256": "9dbbbe08684be7a0992633f2dfe9631b4891cc14c21e2483eecb8c6615e7d544"
+    },
+    {
+      "path": "evaluation/evidence/genie_benchmark.json",
+      "size_bytes": 5925,
+      "sha256": "08b57fa39e8493a400a5c77f1a2e98ebfd6b2ce3c4b0b4db8ef6eb4734a66fe5"
+    },
+    {
+      "path": "evaluation/evidence/hybrid_routing.json",
+      "size_bytes": 3828,
+      "sha256": "047fb71bbba0e7ecffe949bf13ef087108c1f66f9035d5dbcf587fd7a8bf8cde"
+    },
+    {
+      "path": "evaluation/evidence/hybrid_routing_worksheet.csv",
+      "size_bytes": 1246,
+      "sha256": "53f5d28b59fa914559d8b7ed58e9d4f5cabcffad94e3c447b645cabf6d4e72b5"
+    },
+    {
+      "path": "evaluation/evidence/llm_judge.json",
+      "size_bytes": 70865,
+      "sha256": "e12dd5220f3b6ee3d057acd5c553f4a1a8275c3fa475ebc627ca442f687e773e"
+    },
+    {
+      "path": "evaluation/evidence/performance.json",
+      "size_bytes": 7212,
+      "sha256": "2154addf2fd91e3b7dcf580c7404b4b0ed6e7f4cdec1c32ce141a251c9f6b104"
+    },
+    {
+      "path": "evaluation/evidence/preflight.json",
+      "size_bytes": 5801,
+      "sha256": "098fe040560adf181c1bfe8b1a8646467cfc490b41073cea2db8e57a724d77d4"
+    },
+    {
+      "path": "evaluation/evidence/security_negative.json",
+      "size_bytes": 15900,
+      "sha256": "ce23f5cf744b27c50ae2906b717c7d1acf4ed1054c35fe85c8a5f09aae06bb6b"
+    },
+    {
+      "path": "evaluation/evidence/sql_reconciliation.json",
+      "size_bytes": 4933,
+      "sha256": "bb7a5d37ad98b88c0daf211a14761fedc11da137f05b7669460b568008c06f18"
+    },
+    {
+      "path": "evaluation/evidence/unit_tests.json",
+      "size_bytes": 1442,
+      "sha256": "eabb1c6ba0dbbf6dded7b79e99fa2854aaa40dc098e29b88999bfb9e4a010a7b"
+    },
+    {
+      "path": "evaluation/reports/Financial_Transaction_Analysis_MCP_GSA_Evaluation_Documentation.docx",
+      "size_bytes": 1973691,
+      "sha256": "ff8793e863620a73fa529a1cd63a27f4b4160a5843ff32d73b43be495baba678"
+    },
+    {
+      "path": "evaluation/reports/Financial_Transaction_Analysis_MCP_GSA_Hackathon_Deck.pptx",
+      "size_bytes": 6334830,
+      "sha256": "4b56b82ea7900d6f17a8a20ec21168893b71479ce575c82809dd6f1352be2679"
+    },
+    {
+      "path": "evaluation/reports/evaluation_cases.csv",
+      "size_bytes": 24490,
+      "sha256": "40bd63338ed09990f51fcac24420d2e6382206a3baa583a48eff81ed1d243a77"
+    },
+    {
+      "path": "evaluation/reports/evaluation_report.html",
+      "size_bytes": 32085,
+      "sha256": "83c31fc0fe8d2c66a74ea68ac1ed9aaf60a28f4140d3c1a5362a15612f244d9c"
+    },
+    {
+      "path": "evaluation/reports/evaluation_report.json",
+      "size_bytes": 12000,
+      "sha256": "b9e8fa259696a10923b2a5cbe28a444cb0f37c6a5ce39f182478dded8231a1ee"
+    },
+    {
+      "path": "evaluation/reports/evaluation_report.md",
+      "size_bytes": 29625,
+      "sha256": "f85f027fd0744fa6433d85c7758bc34384476be8eaa5f6a155f713fd52ad447d"
+    },
+    {
+      "path": "evaluation/reports/evaluation_summary.csv",
+      "size_bytes": 576,
+      "sha256": "f39d3c02a7c2be2daec4ee9ed10edb90afac18da1faa8eccc92afffee015f54e"
+    },
+    {
+      "path": "evaluation/reports/evaluation_test_matrix.csv",
+      "size_bytes": 41184,
+      "sha256": "4f70e82b91de72171cad8281eeee822ad27f51855596700d0e1e0558a1b5c3f4"
+    },
+    {
+      "path": "evaluation/reports/evaluation_test_matrix.md",
+      "size_bytes": 37136,
+      "sha256": "d1d338269dd258fd06668a08ac885ca989479f03574fc1135e89190b9c4c6a1b"
+    },
+    {
+      "path": "evaluation/reports/evidence_manifest.json",
+      "size_bytes": 3964,
+      "sha256": "a914baa02cd734d3b95c70509303b85977d49bf16c554850d8e74b6678b62543"
+    }
+  ]
+}

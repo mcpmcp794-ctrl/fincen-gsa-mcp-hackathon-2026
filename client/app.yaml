@@ -1,0 +1,37 @@
+# Chat client app `fraudulent-transaction-chat` (source path = this client/ folder).
+# Same code as Jenna's card-txn-llm-client, pointed at the merged MCP server.
+# Model access comes from the app resource `model`:
+#   UC model service models.ai.gpt-5-6-luna (EXECUTE), called via AI Gateway.
+# The client app's service principal also needs CAN_USE on app fraudulent-transaction-mcp.
+command:
+  - streamlit
+  - run
+  - app.py
+  - --server.address=0.0.0.0
+
+env:
+  - name: LLM_ENDPOINT
+    value: models.ai.gpt-5-6-luna
+  - name: MCP_TRANSPORT
+    value: http
+  - name: MCP_SERVER_URL
+    value: https://fraudulent-transaction-mcp-7474654188777746.aws.databricksapps.com/mcp
+  - name: REASONING_EFFORT
+    value: "none"
+  - name: MAX_TOOL_ROUNDS
+    value: "4"
+  # Plan -> Act -> Verify workflow (stage prompts come from the MCP server:
+  # pav_plan / pav_act / pav_verify). "false" = single tool loop.
+  - name: PAV_WORKFLOW
+    value: "true"
+  - name: PAV_MAX_REVISIONS
+    value: "1"
+  - name: PAV_VERIFY_ROUNDS
+    value: "1"
+  - name: MODEL_OPTIONS
+    value: models.ai.gpt-5-6-luna,models.ai.gpt-5-6-terra,databricks-gpt-6-luna
+  # Display only (sidebar); the MCP server's CARD_TRANSACTION_TABLE decides what is queried.
+  - name: TABLE_NAME
+    value: workspace.default.card_transaction_mcp_clean
+  - name: STREAMLIT_GATHER_USAGE_STATS
+    value: "false"

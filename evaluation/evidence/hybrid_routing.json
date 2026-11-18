@@ -1,0 +1,125 @@
+{
+  "suite": "hybrid_routing",
+  "status": "manual_review",
+  "started_at_utc": "2026-11-17T17:46:58+00:00",
+  "finished_at_utc": "2026-11-17T17:46:58+00:00",
+  "description": "Manual comparison worksheet: for each question a reviewer records the Option A (custom MCP tool) and Option B (Genie space) answers, whether each is correct, and the preferred route.",
+  "cases": [
+    {
+      "case_id": "HR-01",
+      "name": "What were the top 10 merchants by transaction count in 2019?",
+      "status": "manual_review",
+      "duration_ms": null,
+      "details": {
+        "expected_route": "A",
+        "expected_tool_or_space": "summarize_transactions"
+      }
+    },
+    {
+      "case_id": "HR-02",
+      "name": "Give me a spending profile for cardholder 1455.",
+      "status": "manual_review",
+      "duration_ms": null,
+      "details": {
+        "expected_route": "A",
+        "expected_tool_or_space": "get_cardholder_profile"
+      }
+    },
+    {
+      "case_id": "HR-03",
+      "name": "Which other cardholders shop at the same merchants as user 1455?",
+      "status": "manual_review",
+      "duration_ms": null,
+      "details": {
+        "expected_route": "A",
+        "expected_tool_or_space": "merchant_relationships"
+      }
+    },
+    {
+      "case_id": "HR-04",
+      "name": "Prepare a review report for transaction 10000056.",
+      "status": "manual_review",
+      "duration_ms": null,
+      "details": {
+        "expected_route": "A",
+        "expected_tool_or_space": "generate_transaction_report"
+      }
+    },
+    {
+      "case_id": "HR-05",
+      "name": "List the 20 most recent transactions for user 1455 in 2019.",
+      "status": "manual_review",
+      "duration_ms": null,
+      "details": {
+        "expected_route": "A",
+        "expected_tool_or_space": "search_transactions"
+      }
+    },
+    {
+      "case_id": "HR-06",
+      "name": "How did monthly online spending change during 2019?",
+      "status": "manual_review",
+      "duration_ms": null,
+      "details": {
+        "expected_route": "A or B",
+        "expected_tool_or_space": "ask_transactions / Behavioral Genie"
+      }
+    },
+    {
+      "case_id": "HR-07",
+      "name": "Which states had the highest average transaction amount in 2019?",
+      "status": "manual_review",
+      "duration_ms": null,
+      "details": {
+        "expected_route": "A or B",
+        "expected_tool_or_space": "ask_transactions / Behavioral Genie"
+      }
+    },
+    {
+      "case_id": "HR-08",
+      "name": "How many fraudulent transactions were there in 2019?",
+      "status": "manual_review",
+      "duration_ms": null,
+      "details": {
+        "expected_route": "B",
+        "expected_tool_or_space": "Fraud Detection Genie (labels are excluded from MCP tools)"
+      }
+    },
+    {
+      "case_id": "HR-09",
+      "name": "Which merchant category codes have the highest fraud rate?",
+      "status": "manual_review",
+      "duration_ms": null,
+      "details": {
+        "expected_route": "B",
+        "expected_tool_or_space": "Fraud Detection Genie"
+      }
+    },
+    {
+      "case_id": "HR-10",
+      "name": "Is transaction 10000056 fraud?",
+      "status": "manual_review",
+      "duration_ms": null,
+      "details": {
+        "expected_route": "Human review",
+        "expected_tool_or_space": "Report review cues + Fraud Genie label; no automated determination"
+      }
+    }
+  ],
+  "metrics": {
+    "worksheet": "/Workspace/Users/michael.decarlo@fincen.gov/fraudulent-transaction-mcp/evaluation/evidence/hybrid_routing_worksheet.csv",
+    "questions": 10,
+    "reviewed": 0,
+    "case_counts": {
+      "pass": 0,
+      "fail": 0,
+      "error": 0,
+      "warn": 0,
+      "skipped": 0,
+      "manual_review": 10
+    }
+  },
+  "notes": [
+    "Fill the option_* and preferred_option columns, then re-run 06/07 to summarise."
+  ]
+}

@@ -1,0 +1,274 @@
+{
+  "suite": "performance",
+  "status": "pass",
+  "started_at_utc": "2026-11-17T17:35:30+00:00",
+  "finished_at_utc": "2026-11-17T17:36:09+00:00",
+  "description": "Each workload runs once cold, then N warm iterations through one MCP session. Reported: min/p50/p95/mean/max latency, error rate and SQL statements per call. A workload passes with zero errors and warm p95 under the configured threshold.",
+  "cases": [
+    {
+      "case_id": "PERF-01",
+      "name": "Latency and reliability: search_transactions",
+      "status": "pass",
+      "duration_ms": 452.2,
+      "details": {
+        "n": 5,
+        "min_ms": 417.5,
+        "p50_ms": 452.2,
+        "p95_ms": 565.1,
+        "mean_ms": 471.7,
+        "max_ms": 586.5,
+        "cold_ms": 442.3,
+        "calls": 6,
+        "errors": 0,
+        "error_rate": 0.0,
+        "sql_statements_per_call": 1,
+        "p95_threshold_ms": 15000.0
+      }
+    },
+    {
+      "case_id": "PERF-02",
+      "name": "Latency and reliability: summarize_transactions[merchant, 2019]",
+      "status": "pass",
+      "duration_ms": 440.8,
+      "details": {
+        "n": 5,
+        "min_ms": 418.8,
+        "p50_ms": 440.8,
+        "p95_ms": 495.8,
+        "mean_ms": 454.2,
+        "max_ms": 502.6,
+        "cold_ms": 510.5,
+        "calls": 6,
+        "errors": 0,
+        "error_rate": 0.0,
+        "sql_statements_per_call": 1,
+        "p95_threshold_ms": 15000.0
+      }
+    },
+    {
+      "case_id": "PERF-03",
+      "name": "Latency and reliability: summarize_transactions[month, all years]",
+      "status": "pass",
+      "duration_ms": 485.9,
+      "details": {
+        "n": 5,
+        "min_ms": 453.4,
+        "p50_ms": 485.9,
+        "p95_ms": 532.7,
+        "mean_ms": 492.2,
+        "max_ms": 537.0,
+        "cold_ms": 454.5,
+        "calls": 6,
+        "errors": 0,
+        "error_rate": 0.0,
+        "sql_statements_per_call": 1,
+        "p95_threshold_ms": 15000.0
+      }
+    },
+    {
+      "case_id": "PERF-04",
+      "name": "Latency and reliability: get_cardholder_profile",
+      "status": "pass",
+      "duration_ms": 1308.0,
+      "details": {
+        "n": 5,
+        "min_ms": 1228.4,
+        "p50_ms": 1308.0,
+        "p95_ms": 1360.9,
+        "mean_ms": 1298.7,
+        "max_ms": 1363.5,
+        "cold_ms": 1424.1,
+        "calls": 6,
+        "errors": 0,
+        "error_rate": 0.0,
+        "sql_statements_per_call": 3,
+        "p95_threshold_ms": 15000.0
+      }
+    },
+    {
+      "case_id": "PERF-05",
+      "name": "Latency and reliability: merchant_relationships",
+      "status": "pass",
+      "duration_ms": 884.6,
+      "details": {
+        "n": 5,
+        "min_ms": 835.6,
+        "p50_ms": 884.6,
+        "p95_ms": 936.1,
+        "mean_ms": 887.3,
+        "max_ms": 938.2,
+        "cold_ms": 872.9,
+        "calls": 6,
+        "errors": 0,
+        "error_rate": 0.0,
+        "sql_statements_per_call": 2,
+        "p95_threshold_ms": 15000.0
+      }
+    },
+    {
+      "case_id": "PERF-06",
+      "name": "Latency and reliability: generate_transaction_report",
+      "status": "pass",
+      "duration_ms": 1796.7,
+      "details": {
+        "n": 5,
+        "min_ms": 1689.0,
+        "p50_ms": 1796.7,
+        "p95_ms": 1891.6,
+        "mean_ms": 1798.8,
+        "max_ms": 1913.7,
+        "cold_ms": 1721.2,
+        "calls": 6,
+        "errors": 0,
+        "error_rate": 0.0,
+        "sql_statements_per_call": 4,
+        "p95_threshold_ms": 15000.0
+      }
+    },
+    {
+      "case_id": "PERF-07",
+      "name": "Latency and reliability: ask_transactions",
+      "status": "pass",
+      "duration_ms": 2185.2,
+      "details": {
+        "n": 2,
+        "min_ms": 2078.3,
+        "p50_ms": 2185.2,
+        "p95_ms": 2281.3,
+        "mean_ms": 2185.2,
+        "max_ms": 2292.0,
+        "cold_ms": 2296.7,
+        "calls": 3,
+        "errors": 0,
+        "error_rate": 0.0,
+        "sql_statements_per_call": 1,
+        "p95_threshold_ms": 45000.0
+      }
+    }
+  ],
+  "metrics": {
+    "transport": "in-memory MCP transport -> fraud_transaction_mcp.app.create_server(DatabricksBackend) -> SQL warehouse",
+    "per_tool": {
+      "search_transactions": {
+        "n": 5,
+        "min_ms": 417.5,
+        "p50_ms": 452.2,
+        "p95_ms": 565.1,
+        "mean_ms": 471.7,
+        "max_ms": 586.5,
+        "cold_ms": 442.3,
+        "calls": 6,
+        "errors": 0,
+        "error_rate": 0.0,
+        "sql_statements_per_call": 1,
+        "p95_threshold_ms": 15000.0
+      },
+      "summarize_transactions[merchant, 2019]": {
+        "n": 5,
+        "min_ms": 418.8,
+        "p50_ms": 440.8,
+        "p95_ms": 495.8,
+        "mean_ms": 454.2,
+        "max_ms": 502.6,
+        "cold_ms": 510.5,
+        "calls": 6,
+        "errors": 0,
+        "error_rate": 0.0,
+        "sql_statements_per_call": 1,
+        "p95_threshold_ms": 15000.0
+      },
+      "summarize_transactions[month, all years]": {
+        "n": 5,
+        "min_ms": 453.4,
+        "p50_ms": 485.9,
+        "p95_ms": 532.7,
+        "mean_ms": 492.2,
+        "max_ms": 537.0,
+        "cold_ms": 454.5,
+        "calls": 6,
+        "errors": 0,
+        "error_rate": 0.0,
+        "sql_statements_per_call": 1,
+        "p95_threshold_ms": 15000.0
+      },
+      "get_cardholder_profile": {
+        "n": 5,
+        "min_ms": 1228.4,
+        "p50_ms": 1308.0,
+        "p95_ms": 1360.9,
+        "mean_ms": 1298.7,
+        "max_ms": 1363.5,
+        "cold_ms": 1424.1,
+        "calls": 6,
+        "errors": 0,
+        "error_rate": 0.0,
+        "sql_statements_per_call": 3,
+        "p95_threshold_ms": 15000.0
+      },
+      "merchant_relationships": {
+        "n": 5,
+        "min_ms": 835.6,
+        "p50_ms": 884.6,
+        "p95_ms": 936.1,
+        "mean_ms": 887.3,
+        "max_ms": 938.2,
+        "cold_ms": 872.9,
+        "calls": 6,
+        "errors": 0,
+        "error_rate": 0.0,
+        "sql_statements_per_call": 2,
+        "p95_threshold_ms": 15000.0
+      },
+      "generate_transaction_report": {
+        "n": 5,
+        "min_ms": 1689.0,
+        "p50_ms": 1796.7,
+        "p95_ms": 1891.6,
+        "mean_ms": 1798.8,
+        "max_ms": 1913.7,
+        "cold_ms": 1721.2,
+        "calls": 6,
+        "errors": 0,
+        "error_rate": 0.0,
+        "sql_statements_per_call": 4,
+        "p95_threshold_ms": 15000.0
+      },
+      "ask_transactions": {
+        "n": 2,
+        "min_ms": 2078.3,
+        "p50_ms": 2185.2,
+        "p95_ms": 2281.3,
+        "mean_ms": 2185.2,
+        "max_ms": 2292.0,
+        "cold_ms": 2296.7,
+        "calls": 3,
+        "errors": 0,
+        "error_rate": 0.0,
+        "sql_statements_per_call": 1,
+        "p95_threshold_ms": 45000.0
+      }
+    },
+    "overall_warm": {
+      "n": 32,
+      "min_ms": 417.5,
+      "p50_ms": 843.0,
+      "p95_ms": 1987.8,
+      "mean_ms": 980.8,
+      "max_ms": 2292.0
+    },
+    "total_calls": 39,
+    "total_errors": 0,
+    "overall_error_rate": 0.0,
+    "case_counts": {
+      "pass": 7,
+      "fail": 0,
+      "error": 0,
+      "warn": 0,
+      "skipped": 0,
+      "manual_review": 0
+    }
+  },
+  "notes": [
+    "Latency is measured from the evaluation client and is dominated by SQL warehouse execution; each backend query opens a new SQL connection. In-process mode excludes the Apps proxy hop."
+  ]
+}

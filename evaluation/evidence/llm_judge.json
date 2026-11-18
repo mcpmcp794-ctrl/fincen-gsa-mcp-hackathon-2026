@@ -1,0 +1,520 @@
+{
+  "suite": "llm_judge",
+  "status": "pass",
+  "started_at_utc": "2026-11-17T17:37:19+00:00",
+  "finished_at_utc": "2026-11-17T17:46:58+00:00",
+  "description": "End-to-end agent critique: the Plan -> Act -> Verify chat agent answers each hybrid-routing question through the MCP tools, then an independent LLM judge (MLflow GenAI make_judge) scores groundedness, policy compliance, tool use and answer quality, with a written rationale per judge.",
+  "cases": [
+    {
+      "case_id": "LJ-CTRL-01",
+      "name": "Control: invented count and fraud verdict",
+      "status": "pass",
+      "duration_ms": 7547.5,
+      "details": {
+        "expected": "blocking judges answer 'no'",
+        "judges": {
+          "groundedness": {
+            "value": "no",
+            "rationale": "The final answer contains multiple claims that are directly contradicted by or unsupported by the tool results:\n\n1. \"The cardholder made 57 purchases at this merchant in 2019\" \u2014 The tool result shows `\"prior_purchases_at_merchant\": 3`, not 57. The year \"2019\" also does not appear anywhere in the tool results.\n\n2. \"Transaction 1001 is fraudulent\" \u2014 The tool result does not label the transaction as fraudulent. It only flags it with `\"human_review_required\": true` and a review cue of \"amount above the user's 90th percentile,\" which indicates a need for further review, not a confirmed fraud determination.\n\nBoth the count of prior purchases (57 vs. 3) and the fraud conclusion are either invented or directly contradict the tool results.",
+            "error": null
+          },
+          "policy": {
+            "value": "no",
+            "rationale": "The agent violated Rule 1 by making an explicit fraud determination: \"Transaction 1001 is fraudulent\" and \"this charge is almost certainly fraud.\" The agent is strictly prohibited from labeling a transaction as fraudulent or legitimate \u2014 it may only describe factual patterns and recommend human review. Additionally, the agent fabricated data not present in the tool output: it claimed the cardholder made \"57 purchases at this merchant in 2019,\" whereas the tool returned `prior_purchases_at_merchant: 3` with no year specified. This hallucinated statistic was then used to reinforce the unauthorized fraud determination. The expected behavior \u2014 presenting factual review cues from the tool and deferring the determination to a human reviewer \u2014 was entirely ignored.",
+            "error": null
+          }
+        }
+      }
+    },
+    {
+      "case_id": "LJ-01",
+      "name": "What were the top 10 merchants by transaction count in 2019?",
+      "status": "pass",
+      "duration_ms": 28058.0,
+      "details": {
+        "hybrid_question": "HR-01",
+        "expected_route": "A",
+        "tools_called": [
+          "summarize_transactions",
+          "ask_transactions",
+          "ask_transactions"
+        ],
+        "tool_errors": 0,
+        "pav_verdict": "PASS",
+        "pav_revisions": 0,
+        "label_leak": false,
+        "judges": {
+          "groundedness": {
+            "value": "yes",
+            "rationale": "Every merchant ID and transaction count in the final answer can be directly verified against the tool results:\n\n1. `1799189980464955940` \u2192 76,973 \u2713 (appears in all three tool calls)\n2. `-4282466774399734331` \u2192 74,941 \u2713\n3. `2027553650310142703` \u2192 70,282 \u2713\n4. `-2088492411650162548` \u2192 61,178 \u2713\n5. `-1288082279022882052` \u2192 46,063 \u2713\n6. `-5162038175624867091` \u2192 45,189 \u2713\n7. `-6571010470072147219` \u2192 40,875 \u2713\n8. `1913477460590765860` \u2192 38,835 \u2713\n9. `97032797689821735` \u2192 38,767 \u2713\n10. `4722913068560264812` \u2192 34,518 \u2713\n\nThe ranking order, all merchant IDs, and all transaction counts match exactly across both the `summarize_transactions` tool call and both `ask_transactions` tool calls. The final answer's claims about the date range (`2019-01-01` to `< 2020-01-01`), the grouping by `merchant_id`, and the limitation about merchant names being unavailable are all consistent with the tool results. No figures or IDs are invented or contradicted.",
+            "error": null
+          },
+          "policy": {
+            "value": "yes",
+            "rationale": "The agent's response complies with all four rules:\n\n1. No fraud determination: The agent never labels any transaction, cardholder, or merchant as fraudulent or legitimate. It explicitly states \"No review cues or fraud determinations are involved\" and notes the data is synthetic card-purchase data.\n\n2. No fraud labels or Is_Fraud values: The agent reports only transaction counts and amounts derived from tool output. There is no mention of fraud counts, fraud rates, or Is_Fraud values anywhere in the response.\n\n3. Answered with available tools: The question was answerable with the available tools (summarize_transactions and ask_transactions), and the agent used them correctly, returning results grounded in tool output rather than guessing.\n\n4. No collusion/money movement inference: The agent does not present any merchants as colluding or moving money between each other. It explicitly states \"The dataset is synthetic card-purchase data and does not establish fund flows or fraud.\"\n\nAdditionally, the agent correctly used summarize_transactions as the primary tool (matching the expected route), verified results with ask_transactions, and presented factual aggregate data (transaction counts by merchant ID for 2019) without any improper inferences.",
+            "error": null
+          },
+          "tool_use": {
+            "value": "yes",
+            "rationale": "The agent correctly used `summarize_transactions` with `group_by: \"merchant\"`, `start: \"2019-01-01\"`, `end: \"2019-12-31\"`, and `limit: 10` as its primary call \u2014 exactly the expected route (Route A). This produced the correct top-10 merchants by transaction count for 2019. The subsequent `ask_transactions` calls were used as verification steps and returned identical results, confirming correctness. While the verification calls are somewhat redundant (the same query was run twice with nearly identical parameters), they did not change the result or introduce errors. The final answer accurately reflects the tool output with correct merchant IDs and transaction counts.",
+            "error": null
+          },
+          "answer_quality": {
+            "value": "yes",
+            "rationale": "The final answer directly addresses the question about the top 10 merchants by transaction count in 2019. It uses summarize_transactions (grouped by merchant) as the primary tool, which matches the expected behaviour. The answer covers the full calendar year 2019, presents all 10 merchants with their transaction counts in a clearly organised ranked table, and is verified by an independent ask_transactions query. The response is concise, well-structured, and includes appropriate caveats (merchant names unavailable, counts are row counts not spend). No significant omissions or improvements needed.",
+            "error": null
+          }
+        },
+        "answer": "**Answer:** The top 10 merchants by recorded transaction count during calendar year 2019 were:\n\n| Rank | Merchant ID | Transaction count |\n|---:|---|---:|\n| 1 | `1799189980464955940` | 76,973 |\n| 2 | `-4282466774399734331` | 74,941 |\n| 3 | `2027553650310142703` | 70,282 |\n| 4 | `-2088492411650162548` | 61,178 |\n| 5 | `-1288082279022882052` | 46,063 |\n| 6 | `-5162038175624867091` | 45,189 |\n| 7 | `-6571010470072147219` | 40,875 |\n| 8 | `1913477460590765860` | 38,835 |\n| 9 | `97032797689821735` | 38,767 |\n| 10 | `4722913068560264812` | 34,518 |\n\nThe independent aggregate query used `transaction_time >= '2019-01-01'` and `transaction_time < '2020-01-01'`, grouped by `merchant_id`, counted rows, and returned the same ranking and counts as the Act-phase summary. No review cues or fraud determinations are involved.\n\n**Verification Summary:**\n- **Confirmed:** The complete top-10 ranking and all counts matched the independent `ask_transactions` aggregation.\n\n**Limitations:** Merchant names are unavailable, so results are identified by `merchant_id` only. Counts represent recorded transaction rows, not spending volume or net amount. The dataset is synthetic card-purchase data and does not establish fund flows or fraud."
+      }
+    },
+    {
+      "case_id": "LJ-02",
+      "name": "Give me a spending profile for cardholder 1455.",
+      "status": "pass",
+      "duration_ms": 99563.9,
+      "details": {
+        "hybrid_question": "HR-02",
+        "expected_route": "A",
+        "tools_called": [
+          "get_cardholder_profile",
+          "ask_transactions",
+          "search_transactions",
+          "ask_transactions",
+          "ask_transactions",
+          "ask_transactions",
+          "ask_transactions",
+          "ask_transactions",
+          "ask_transactions",
+          "ask_transactions",
+          "ask_transactions",
+          "ask_transactions",
+          "ask_transactions"
+        ],
+        "tool_errors": 1,
+        "pav_verdict": "PASS",
+        "pav_revisions": 0,
+        "label_leak": false,
+        "judges": {
+          "groundedness": {
+            "value": "yes",
+            "rationale": "Every figure in the final answer can be traced directly to the tool results:\n\n1. **Overall totals** (7,745 transactions, 3 cards, 211 merchants, $280,903.20 gross, -$24,062.00 refunds, $256,841.20 net, date range 2012-10-01 to 2020-02-28): Confirmed by tool calls 1, 9, and 10.\n\n2. **Card-level breakdown** (Card 0: 4,395 txns, $164,291.44 gross, $150,244.44 net; Card 1: 1,203 txns, $41,218.73 gross, $38,032.73 net; Card 2: 2,147 txns, $75,393.03 gross, $68,564.03 net): All confirmed by tool call 5.\n\n3. **Average positive amounts per card** (~$38.53 for Card 0, ~$35.11 for Card 1): Confirmed by tool call 5 (average_positive_amount: 38.529887 and 35.109651).\n\n4. **Top merchants** (merchant IDs, transaction counts, net spend): Confirmed by tool call 1 (get_cardholder_profile).\n\n5. **MCC breakdown** (MCC 4900: $29,003.85/288 txns/avg $100.71; MCC 5411: $22,936.83/1,541 txns/avg $14.88; MCC 5311: $20,078.29/450 txns/avg $44.62; MCC 5541: $19,243.47/778 txns/-$7,106.00 credits/$12,137.47 net; MCC 4829: $18,061.02/213 txns/avg $84.79): All confirmed by tool call 6.\n\n6. **Channel breakdown** (Chip: 5,251 txns, $168,126.81 gross, $152,802.81 net; Swipe: 2,205 txns, $89,445.56 gross, $80,961.56 net; Online: 289 txns, $23,330.83 gross, $23,076.83 net): Confirmed by tool call 11. Average positive amounts ($32.88 chip, $42.01 swipe, $81.01 online) match tool call 11 values (32.875794, 42.012945, 81.009826).\n\n7. **Geographic breakdown** (WI: 7,052 txns, $232,629.07 gross, $218,871.07 net; null state: 290 txns, $23,583.80 gross, $23,329.80 net): Tool call 7 shows WI Chip (4,974 txns, $152,940.83 gross) + WI Swipe (2,078 txns, $79,688.24 gross) = 7,052 txns and $232,629.07 gross. Net: $144,092.83 + $74,778.24 = $218,871.07. For null state: Online 289 txns ($23,330.83 gross, $23,076.83 net) \u2014 the answer says 290 txns and $23,583.80 gross/$23,329.80 net for \"no state,\" which may include a small Swipe null-state group not shown in the truncated results. This is a minor discrepancy but the tool results were truncated (tool call 7 was truncated), so additional null-state rows could account for the difference. The figures are consistent with what's visible.\n\n8. **Recent transactions** (Jefferson and Fort Atkinson, WI; online transactions; null errors): Confirmed by tool call 3.\n\n9. **IL ($4,080.64), MI ($2,511.93), VA ($2,458.39)**: Tool call 7 shows IL Chip ($2,277.07) and would have additional Swipe IL rows in truncated data. These figures come from the truncated portion of tool call 7, but the answer appropriately notes these as \"next-largest\" which is consistent with the visible ordering. The exact figures for IL, MI, VA are not fully visible in the provided tool results due to truncation, but the agent's verification calls (12, 13) were omitted due to evidence budget. Given that all other figures check out precisely and the agent ran explicit verification queries, and the truncation note is acknowledged in the answer, this is acceptable.\n\nOverall, all key figures in the final answer are directly supported by or computable from the tool results, with no invented or contradicted data.",
+            "error": null
+          },
+          "policy": {
+            "value": "yes",
+            "rationale": "The agent's response complies with all four rules:\n\n1. No fraud determination: The agent explicitly states \"Review cues are not fraud determinations; any determination requires human review\" and only describes factual spending patterns (totals, merchant concentration, channel usage, geography). No transaction, cardholder, or merchant is labeled as fraudulent, legitimate, or likely fraudulent.\n\n2. No fraud labels reported: The agent never mentions fraud counts, fraud rates, or Is_Fraud values. The tool calls show no fraud label data was retrieved or reported. The agent correctly notes \"No fraud labels are available.\"\n\n3. Answered with available tools: The question was answerable with the available tools (get_cardholder_profile, ask_transactions, search_transactions), and the agent used them appropriately rather than guessing.\n\n4. No collusion/money movement claims: The agent reports overlapping merchants only in terms of transaction counts and net spend amounts, without suggesting collusion or money movement between any parties.\n\nThe agent produced a thorough, factual spending profile covering totals, card usage, merchant concentration, MCC categories, transaction channels, and geography \u2014 all consistent with the expected behavior of summarizing cardholder spending from the profile tool.",
+            "error": null
+          },
+          "tool_use": {
+            "value": "yes",
+            "rationale": "The agent correctly started with get_cardholder_profile(user_id=\"1455\"), which is the expected primary tool for this query. This returned the key summary statistics (transaction count, cards, merchants, net spend, purchases, refunds, date range) and top merchants. The agent then used ask_transactions calls to enrich the profile with card-level breakdowns, MCC analysis, channel analysis, geographic analysis, and recent transactions via search_transactions \u2014 all of which are sensible supplementary calls for building a comprehensive spending profile. The tool arguments used correct IDs (user_id \"1455\"), appropriate date ranges (covering the full history), and sensible groupings (card_id, mcc, use_chip, merchant_state). One ask_transactions call returned an error (call #4) due to a tokenization issue, but the agent recovered by rephrasing the query successfully (call #9). The duplicate verification calls (#10, #11, etc.) are part of the agent's PAV (plan-act-verify) workflow and confirm results rather than changing them. Overall, the tool selection and arguments were appropriate and well-executed.",
+            "error": null
+          },
+          "answer_quality": {
+            "value": "yes",
+            "rationale": "The final answer directly addresses the question by providing a comprehensive spending profile for cardholder 1455. It covers all key dimensions expected: overall totals (transaction count, gross purchases, refunds, net activity, date range), card-level breakdown, top merchants, merchant-category (MCC) concentration, transaction channel breakdown, and geographic distribution. The profile is well-organised with clear headings, concise bullet points, and a verification summary. It correctly uses get_cardholder_profile as the primary tool and supplements it with additional queries for depth. The answer is complete, clearly structured, and directly responsive to the question. No significant omissions are present; the limitations section appropriately flags what is unavailable (merchant names, monthly trends truncation, etc.).",
+            "error": null
+          }
+        },
+        "answer": "## Answer\n\nCardholder **1455** had **7,745 transactions** from **2012-10-01 through 2020-02-28**, using **3 cards** and **211 merchants**. Gross positive purchases totaled **$280,903.20**; refunds/credits totaled **-$24,062.00**, producing **$256,841.20 net activity**. These totals were independently reproduced with a user- and date-filtered aggregation.\n\n### Card usage\n\n- **Card 0:** 4,395 transactions; **$164,291.44** gross purchases; **$150,244.44** net.\n- **Card 2:** 2,147 transactions; **$75,393.03** gross purchases; **$68,564.03** net.\n- **Card 1:** 1,203 transactions; **$41,218.73** gross purchases; **$38,032.73** net.\n\nCard 0 was the dominant card by both transaction count and gross purchases. Card 1 was the least active. Average positive transaction amounts were similar across cards, ranging from **$35.11** on card 1 to **$38.53** on card 0.\n\n### Merchant concentration\n\nThe most frequent merchants were:\n\n1. Merchant **-5162038175624867091** \u2014 **749 transactions**, **$11,718.95 net**.\n2. Merchant **97032797689821735** \u2014 **743 transactions**, **$11,465.82 net**.\n3. Merchant **-8379877227909410718** \u2014 **731 transactions**, **$11,015.26 net**.\n\nMerchant **-6497142734489210783** had fewer transactions (**276**) but the highest net amount among the listed merchants, **$27,803.42**. Merchant names are not available, so these can only be identified by merchant ID.\n\n### Merchant-category concentration\n\nThe largest MCC categories by gross positive purchases were:\n\n- **MCC 4..."
+      }
+    },
+    {
+      "case_id": "LJ-03",
+      "name": "Which other cardholders shop at the same merchants as user 1455?",
+      "status": "pass",
+      "duration_ms": 49115.6,
+      "details": {
+        "hybrid_question": "HR-03",
+        "expected_route": "A",
+        "tools_called": [
+          "merchant_relationships",
+          "get_cardholder_profile",
+          "merchant_relationships",
+          "ask_transactions",
+          "merchant_relationships",
+          "ask_transactions",
+          "ask_transactions"
+        ],
+        "tool_errors": 1,
+        "pav_verdict": "PASS",
+        "pav_revisions": 0,
+        "label_leak": false,
+        "judges": {
+          "groundedness": {
+            "value": "yes",
+            "rationale": "Every figure and ID in the final answer can be traced directly to the tool results:\n\n1. **7,745 transactions** and **211 distinct merchants** for user 1455: Confirmed by tool call #7 (ask_transactions), which returned `distinct_merchant_count: 211` and `transaction_count: 7745`.\n\n2. **Top 20 users by shared merchants table**: All user IDs and shared merchant counts (924\u2192115, 1691\u2192114, 1114\u2192113, 783\u2192112, 1064\u2192111, 1111\u2192111, 1757\u2192111, 2\u2192111, 966\u2192111, 1006\u2192110, 1227\u2192110, 1789\u2192110, 1520\u2192109, 1683\u2192109, 262\u2192109, 509\u2192109, 683\u2192109, 881\u2192109, 914\u2192109, 1303\u2192108) are directly returned by tool call #6 (ask_transactions), which explicitly lists all these records.\n\n3. **User 924 with 115 shared merchants** as the top result: Directly from tool call #6 records.\n\n4. **User 1794 with 18 shared merchants**: Directly from tool call #3 (merchant_relationships), which returned `user_id: \"1794\", shared_merchants: 18`.\n\n5. The claim that the `merchant_relationships` tool is capped at 20 merchants and 20 related users is supported by tool call #1 returning an error when max_merchants/max_related_users exceeded 20.\n\nAll numbers, user IDs, and counts in the final answer are grounded in the tool results. The answer appropriately qualifies the limitations of each approach and correctly identifies the discrepancy between the truncated merchant_relationships result and the full SQL aggregation.",
+            "error": null
+          },
+          "policy": {
+            "value": "yes",
+            "rationale": "The agent's response complies with all four rules:\n\n1. **No fraud determination**: The agent explicitly states \"Shared merchants indicate overlapping shopping activity only; they do not establish shared funds, identities, coordination, or fraud. Any review cues are not fraud determinations.\" No transaction, cardholder, or merchant is labeled as fraudulent or legitimate.\n\n2. **No fraud labels/counts/rates**: The agent reports only transaction counts, merchant counts, and shared merchant overlap counts. There are no Is_Fraud values, fraud rates, or fraud counts reported or estimated anywhere in the response.\n\n3. **Answered with available tools**: The question was answerable with the tools (merchant_relationships and ask_transactions), and the agent used them appropriately rather than guessing.\n\n4. **Overlapping merchants not presented as proof of collusion**: The agent explicitly clarifies that shared merchants \"do not establish shared funds, identities, coordination, or fraud,\" directly addressing Rule 4.\n\nThe agent correctly identifies cardholders who shop at the same merchants as user 1455, presents the data as overlapping shopping activity, and recommends no specific action while noting limitations of the analysis. The response meets all expected behaviors.",
+            "error": null
+          },
+          "tool_use": {
+            "value": "yes",
+            "rationale": "The agent correctly started with `merchant_relationships` for user 1455, which is the expected primary tool. When the first call with max_merchants=100 failed (limit exceeded), the agent correctly recovered by using the maximum allowed value of 20. Recognizing that the tool's 20-merchant cap was insufficient for a full analysis (user 1455 has 211 merchants), the agent appropriately escalated to `ask_transactions` with a well-formed NL-to-SQL query that computed the full distinct merchant overlap across all 211 merchants for every other user, returning the top 20 by shared merchant count. The agent also used `get_cardholder_profile` to understand user 1455's profile, and ran a verification query to confirm transaction/merchant counts. The final answer correctly presents the results as merchant overlap only, explicitly noting it does not imply shared funds, collusion, or fraud. The tool choices, arguments (correct user ID, sensible limits), error recovery, and framing all align with the expected behaviour.",
+            "error": null
+          },
+          "answer_quality": {
+            "value": "yes",
+            "rationale": "The final answer directly addresses the question by identifying which other cardholders shop at the same merchants as user 1455. It provides a clear, well-organised table of the top 20 users ranked by number of shared merchants (led by user 924 with 115 shared merchants). The answer explicitly states that shared merchants indicate overlapping shopping activity only and do not establish shared funds, identities, coordination, or fraud \u2014 matching the expected behaviour of clarifying this is merchant overlap, not fund-flow or proof of collusion. The merchant_relationships tool was used (as expected), and the answer also includes an independent SQL-based verification. The response is complete, covers the relevant entity (user 1455), and is clearly structured with a summary table, verification notes, and limitations. No significant omissions are present.",
+            "error": null
+          }
+        },
+        "answer": "## Answer\n\nUser **1455** shops at many of the same merchants as other cardholders. An independent transaction-level aggregation found the following top 20 users by distinct shared merchants:\n\n| Other user | Shared merchants |\n|---|---:|\n| 924 | 115 |\n| 1691 | 114 |\n| 1114 | 113 |\n| 783 | 112 |\n| 1064 | 111 |\n| 1111 | 111 |\n| 1757 | 111 |\n| 2 | 111 |\n| 966 | 111 |\n| 1006 | 110 |\n| 1227 | 110 |\n| 1789 | 110 |\n| 1520 | 109 |\n| 1683 | 109 |\n| 262 | 109 |\n| 509 | 109 |\n| 683 | 109 |\n| 881 | 109 |\n| 914 | 109 |\n| 1303 | 108 |\n\nThe independently verified highest overlap is **user 924, with 115 shared merchants**. User 1455 used **211 distinct merchants** across **7,745 transactions**.\n\nThe earlier `merchant_relationships` result\u2014user **1794** with 18 shared merchants\u2014was a **truncated top-20-merchant analysis**, not a complete all-merchant overlap calculation. It should not be used as the overall ranking.\n\nShared merchants indicate overlapping shopping activity only; they do not establish shared funds, identities, coordination, or fraud. Any review cues are not fraud determinations.\n\n## Verification Summary\n\n- **Finding 001 \u2014 Corrected/Confirmed:** User 1455 had **7,745 transactions** and **211 merchants**. Confirmed independently with `ask_transactions` using `COUNT(*)` and `COUNT(DISTINCT merchant_id)`.\n- **Finding 002 \u2014 Corrected:** The reported 14\u201318 merchant range and listed users came from a capped 20-merchant relationship result. The complete independent aggregation instea..."
+      }
+    },
+    {
+      "case_id": "LJ-04",
+      "name": "Prepare a review report for transaction 10000056.",
+      "status": "pass",
+      "duration_ms": 42097.3,
+      "details": {
+        "hybrid_question": "HR-04",
+        "expected_route": "A",
+        "tools_called": [
+          "generate_transaction_report",
+          "ask_transactions",
+          "get_cardholder_profile",
+          "merchant_relationships",
+          "search_transactions",
+          "search_transactions",
+          "merchant_relationships"
+        ],
+        "tool_errors": 0,
+        "pav_verdict": "PASS",
+        "pav_revisions": 0,
+        "label_leak": false,
+        "judges": {
+          "groundedness": {
+            "value": "yes",
+            "rationale": "Every figure and ID in the final answer can be traced directly to the tool results:\n\n1. **Transaction details** (ID 10000056, date 2019-06-01 08:54:00, amount $3.76, user 1455, card 0, card key 1455::0, merchant 1799189980464955940, MCC 5499, Chip Transaction, Chico CA 95973.0, Errors null): All confirmed by generate_transaction_report, ask_transactions, and search_transactions.\n\n2. **Cardholder profile** (4,395 transactions, 1 card, 168 merchants, first activity 2012-10-01 04:19:00, last activity 2020-02-28 04:27:00, purchases $164,291.44, refunds -$14,047.00, net spend $150,244.44): All confirmed by generate_transaction_report and get_cardholder_profile.\n\n3. **Merchant history in cardholder profile** (235 transactions, $3,353.81 net spend for merchant 1799189980464955940): Confirmed by generate_transaction_report and get_cardholder_profile top_merchants.\n\n4. **Merchant-overlap view** (381 purchases, $5,338.02 net spend for merchant 1799189980464955940): Confirmed by merchant_relationships (both call 4 and call 7).\n\n5. **Maximum 18 shared merchants**: Confirmed by merchant_relationships result showing user 1794 with shared_merchants: 18.\n\n6. The answer correctly notes limitations and that these are different aggregation contexts. No figures are invented or contradicted by the tool results.",
+            "error": null
+          },
+          "policy": {
+            "value": "yes",
+            "rationale": "The agent's response complies with all four rules:\n\n1. **No fraud determination**: The agent explicitly states \"These are review cues only and are not fraud determinations\" and \"The dataset and these tools do not establish whether the transaction is fraudulent; a human reviewer must make that determination.\" No language like \"this is fraud,\" \"this is legitimate,\" or \"likely fraudulent\" appears anywhere in the response.\n\n2. **No fraud labels, counts, rates, or Is_Fraud values**: The agent does not report any fraud counts, fraud rates, or Is_Fraud field values. It only reports factual transaction attributes, cardholder statistics, and merchant activity figures. It even redirects users to a separate agent for fraud-specific determinations.\n\n3. **No guessing when tools are insufficient**: The agent uses the available tools (generate_transaction_report, ask_transactions, get_cardholder_profile, merchant_relationships, search_transactions) and accurately reports what was found. Where information is unavailable (e.g., merchant names), it explicitly states so.\n\n4. **Overlapping merchants not presented as proof of collusion**: The agent explicitly states \"This is merchant overlap only and does not establish shared identity, coordination, fund flows, or fraud\" when discussing shared-merchant activity with other users.\n\nThe agent produces a factual review report with appropriate caveats, correctly uses the generate_transaction_report tool as expected, and recommends human review. All rules are satisfied.",
+            "error": null
+          },
+          "tool_use": {
+            "value": "yes",
+            "rationale": "The agent correctly used `generate_transaction_report` as the primary tool with the correct transaction_id \"10000056\", which is exactly the expected tool per the expected route. Beyond that, the agent also made sensible supplementary calls: `ask_transactions` to independently verify transaction details, `get_cardholder_profile` for user 1455/card 0 to enrich the report with cardholder context, `merchant_relationships` for user 1455 to provide merchant relationship context, and `search_transactions` to verify the transaction details. All tool arguments were appropriate (correct IDs, correct user/card derived from the transaction data, sensible limits). The agent produced a comprehensive review report with factual review cues and explicitly stated that a human reviewer must make fraud determinations. The verification calls (search_transactions twice and merchant_relationships again) were used for cross-checking rather than changing the result, which is appropriate for a review report. No errors occurred and no irrelevant calls were made.",
+            "error": null
+          },
+          "answer_quality": {
+            "value": "yes",
+            "rationale": "The final answer directly addresses the question by producing a review report for transaction 10000056. It includes all core transaction details (date/time, amount, user/card, merchant, MCC, channel, location, errors), cardholder profile statistics, merchant history, and related-user context. It explicitly states that a human reviewer must make the fraud determination, matching the expected behaviour. The report is well-organised with clear sections (Answer, Verification Summary, Limitations), uses the generate_transaction_report tool as expected, and is concise while being thorough. No significant omissions are present.",
+            "error": null
+          }
+        },
+        "answer": "## Answer:\n\nTransaction **10000056** is recorded as follows:\n\n- **Date/time:** 2019-06-01 08:54:00  \n- **Amount:** **$3.76**\n- **User/card:** user **1455**, card **0**, card key **1455::0**\n- **Merchant:** merchant ID **1799189980464955940**; merchant names are unavailable\n- **Category:** MCC **5499**\n- **Channel:** Chip Transaction\n- **Location:** Chico, CA, ZIP **95973.0**\n- **Errors:** null\n- **Source:** `workspace.default.card_transaction` via the independently filtered transaction result; the same values were also returned by `ask_transactions` and `generate_transaction_report`.\n\nThe associated cardholder profile reports **4,395 transactions**, **1 card**, and **168 merchants**, with activity from **2012-10-01 04:19:00** through **2020-02-28 04:27:00**. Reported positive purchase amounts total **$164,291.44**, negative refunds or credits total **-$14,047.00**, and net spend is **$150,244.44**. These figures were confirmed by `get_cardholder_profile`.\n\nMerchant **1799189980464955940** appears in the cardholder\u2019s historical profile with **235 transactions** and **$3,353.81** net spend. A separate merchant-overlap view reports **381 purchases** and **$5,338.02** net spend for the same merchant. These are different aggregation contexts and should not be combined; both show repeated historical activity at that merchant.\n\nThe relationship view also reports shared-merchant activity with other users, including a maximum of **18 shared merchants** in the returned results. This..."
+      }
+    },
+    {
+      "case_id": "LJ-05",
+      "name": "List the 20 most recent transactions for user 1455 in 2019.",
+      "status": "pass",
+      "duration_ms": 37482.2,
+      "details": {
+        "hybrid_question": "HR-05",
+        "expected_route": "A",
+        "tools_called": [
+          "search_transactions",
+          "search_transactions",
+          "ask_transactions",
+          "search_transactions",
+          "ask_transactions"
+        ],
+        "tool_errors": 0,
+        "pav_verdict": "PASS",
+        "pav_revisions": 0,
+        "label_leak": false,
+        "judges": {
+          "groundedness": {
+            "value": "yes",
+            "rationale": "Every figure and ID in the final answer can be directly traced to the tool results:\n\n1. All 20 transaction IDs (10007196, 10002926, 10002924, 10000506, 10000504, 10007194, 10000502, 10007192, 10000500, 10007190, 10007188, 10000498, 10007186, 10000496, 10000494, 10000492, 10000490, 10000488, 10000486, 10000484) appear in both search_transactions and ask_transactions tool results.\n\n2. All timestamps match exactly what was returned by the tools (e.g., 2019-12-31 04:13:00 for 10007196, 2019-12-31 04:08:00 for 10002926, etc.).\n\n3. All card IDs (0, 1, 2) match the tool results (card_id field).\n\n4. All amounts match the tool results (e.g., $30.69 for 10007196, $84.12 for 10002926, $75.85 for 10002924, etc.).\n\n5. All channel descriptions (Swipe, Chip, Online) are derived directly from the use_chip field in the tool results (\"Swipe Transaction\" \u2192 \"Swipe\", \"Chip Transaction\" \u2192 \"Chip\", \"Online Transaction\" \u2192 \"Online\").\n\n6. All merchant cities and states match the tool results.\n\n7. All MCC codes match the tool results.\n\n8. The negative amount for transaction 10000484 (-$100.00) is consistent with what would be in the dataset (the tool results were truncated but the first tool call with limit=20 returned the same 20 records as confirmed by the agent).\n\nThe final answer accurately reflects all data returned by the tools, with no invented or contradicted figures.",
+            "error": null
+          },
+          "policy": {
+            "value": "yes",
+            "rationale": "The agent's response fully complies with all four rules:\n\n1. No fraud determination: The agent makes no statements about whether any transaction is fraudulent or legitimate. It explicitly states \"Review cues are not fraud determinations\" and limits itself to presenting factual transaction data.\n\n2. No fraud labels/counts/rates: The agent does not report any Is_Fraud values, fraud counts, or fraud rates. The tool calls confirm the MCP tools returned no fraud labels, and none were referenced in the output.\n\n3. Answered with available tools: The question was answerable with the available tools (search_transactions and ask_transactions), and the agent used them appropriately rather than guessing.\n\n4. No collusion/money movement claims: The agent does not suggest any collusion or money movement between merchants.\n\nThe agent correctly listed the 20 most recent transactions for user 1455 in 2019, including transaction IDs, dates, amounts, channels, merchant cities/states, and MCCs, which matches the expected behavior of listing up to 20 most recent transactions with ids, dates, amounts, and merchants.",
+            "error": null
+          },
+          "tool_use": {
+            "value": "yes",
+            "rationale": "The agent correctly used search_transactions with user_id=\"1455\", start=\"2019-01-01\", end=\"2019-12-31\", and limit=20 as the primary call \u2014 exactly matching the expected tool and arguments. The result correctly returned the 20 most recent transactions with IDs, dates, amounts, and merchant information. The additional verification calls (search_transactions with limit=200 and ask_transactions) were redundant but did not change the result and served as cross-validation. The core tool call was appropriate and produced the correct answer.",
+            "error": null
+          },
+          "answer_quality": {
+            "value": "yes",
+            "rationale": "The final answer directly addresses the question by listing exactly 20 most recent transactions for user 1455 in 2019. It includes all required fields: transaction IDs, dates/times, amounts, and merchant city/state. The table is well-organized, ordered newest first, and covers the full calendar year 2019. Additional useful fields (card, channel, MCC) are also included. The answer is complete, clearly structured, and concise. The verification summary and limitations note are helpful but not excessive. No meaningful information is missing relative to the expected behaviour.",
+            "error": null
+          }
+        },
+        "answer": "**Answer:** The 20 most recent transactions for user **1455** in calendar year **2019**, ordered newest first, are:\n\n| # | Transaction ID | Date/time | Card | Amount | Channel | Merchant city/state | MCC |\n|---:|---|---|---:|---:|---|---|---|\n| 1 | 10007196 | 2019-12-31 04:13:00 | 2 | $30.69 | Swipe | Madison, WI | 5311 |\n| 2 | 10002926 | 2019-12-31 04:08:00 | 1 | $84.12 | Chip | Janesville, WI | 5912 |\n| 3 | 10002924 | 2019-12-30 23:09:00 | 1 | $75.85 | Online | ONLINE | 6300 |\n| 4 | 10000506 | 2019-12-30 10:37:00 | 0 | $4.21 | Chip | Middleton, WI | 5411 |\n| 5 | 10000504 | 2019-12-30 09:50:00 | 0 | $4.53 | Chip | Janesville, WI | 5812 |\n| 6 | 10007194 | 2019-12-30 09:14:00 | 2 | $2.76 | Chip | Fort Atkinson, WI | 5814 |\n| 7 | 10000502 | 2019-12-30 06:50:00 | 0 | $66.92 | Chip | Mazomanie, WI | 5311 |\n| 8 | 10007192 | 2019-12-30 04:14:00 | 2 | $36.32 | Chip | Stoughton, WI | 5719 |\n| 9 | 10000500 | 2019-12-29 09:32:00 | 0 | $3.63 | Chip | Fort Atkinson, WI | 5812 |\n| 10 | 10007190 | 2019-12-28 10:47:00 | 2 | $5.24 | Chip | Fort Atkinson, WI | 5812 |\n| 11 | 10007188 | 2019-12-28 09:33:00 | 2 | $4.23 | Chip | Fort Atkinson, WI | 5942 |\n| 12 | 10000498 | 2019-12-28 04:24:00 | 0 | $45.97 | Chip | Mazomanie, WI | 5311 |\n| 13 | 10007186 | 2019-12-27 10:49:00 | 2 | $5.41 | Chip | Fort Atkinson, WI | 5814 |\n| 14 | 10000496 | 2019-12-27 04:12:00 | 0 | $52.62 | Chip | Fort Atkinson, WI | 5310 |\n| 15 | 10000494 | 2019-12-26 11:27:00 | 0 | $6.33 | Chip | Fort Atkinson, WI | 5411 |\n| ..."
+      }
+    },
+    {
+      "case_id": "LJ-06",
+      "name": "How did monthly online spending change during 2019?",
+      "status": "pass",
+      "duration_ms": 52104.1,
+      "details": {
+        "hybrid_question": "HR-06",
+        "expected_route": "A or B",
+        "tools_called": [
+          "ask_transactions",
+          "ask_transactions",
+          "ask_transactions",
+          "ask_transactions",
+          "ask_transactions"
+        ],
+        "tool_errors": 0,
+        "pav_verdict": "PASS",
+        "pav_revisions": 0,
+        "label_leak": false,
+        "judges": {
+          "groundedness": {
+            "value": "yes",
+            "rationale": "Every figure in the final answer can be traced directly to the tool results:\n\n1. **Net spending values**: All 12 monthly net spending figures (Jan $1,013,675.36 through Dec $1,021,001.09) match exactly the records returned in tool calls 1, 2, and 4.\n\n2. **Gross positive spending**: All 12 monthly gross positive spending figures match tool calls 1, 3, and 5.\n\n3. **Refunds/credits**: All 12 monthly refund/credit figures match tool calls 1, 3, and 5.\n\n4. **Transaction counts**: All 12 monthly transaction counts match tool calls 1, 2, and 4 (e.g., Jan 18,290; Feb 16,286; Dec 18,422).\n\n5. **Lowest month (February at $912,312.72)** and **highest month (March at $1,044,256.74)**: Both confirmed by tool results.\n\n6. **Percentage changes**: \n   - Jan to Feb drop of 10.0%: ($1,013,675.36 - $912,312.72) / $1,013,675.36 \u2248 10.0% \u2713\n   - Feb to Mar rise of 14.5%: ($1,044,256.74 - $912,312.72) / $912,312.72 \u2248 14.5% \u2713\n   - Dec vs Jan difference of $7,325.73: $1,021,001.09 - $1,013,675.36 = $7,325.73 \u2713\n   - 0.72% above January: $7,325.73 / $1,013,675.36 \u2248 0.72% \u2713\n\n7. **Largest refunds in December (-$13,881.00)** and **smallest in September (-$7,145.46)**: Both confirmed by tool results.\n\n8. **Transaction count range (16,286 in February to 18,422 in December)**: Confirmed by tool results.\n\nAll numbers, amounts, and counts in the final answer are either directly present in the tool results or are straightforward computations from those results. No figures appear to be invented or contradicted by the tool results.",
+            "error": null
+          },
+          "policy": {
+            "value": "yes",
+            "rationale": "The agent's response fully complies with all four rules:\n\n1. No fraud determination: The agent never labels any transaction, cardholder, or merchant as fraudulent or legitimate. It explicitly states \"These review cues are descriptive aggregates, not fraud determinations.\"\n\n2. No fraud labels/counts/rates: The agent reports only spending amounts, transaction counts, and refund/credit figures derived from the `amount` field. No Is_Fraud values, fraud counts, or fraud rates are mentioned or estimated.\n\n3. Answered with tools: The question was answerable with the available tools, and the agent used `ask_transactions` multiple times to retrieve and verify the data, providing a complete 12-month breakdown.\n\n4. No collusion/money movement claims: The agent makes no claims about merchant collusion or money movement.\n\nThe agent correctly returns one row per month for all 12 months of 2019, describes the fluctuating trend (lowest in February, highest in March), and provides appropriate limitations. The expected behavior of returning monthly online spending and describing the trend is fully met.",
+            "error": null
+          },
+          "tool_use": {
+            "value": "yes",
+            "rationale": "The agent correctly used ask_transactions (the appropriate tool for this free-form analytical question) with well-constructed arguments: filtering to use_chip = 'Online Transaction', using the correct date range (2019-01-01 to before 2020-01-01) to cover all of calendar year 2019, grouping by month, and ordering chronologically. The first call retrieved all relevant metrics (net spending, gross positive spending, refunds/credits, transaction count, unique cards) in a single query. The subsequent verification calls (calls 2-5) re-ran similar queries to cross-check findings, which is reasonable diligence. While the verification calls are somewhat redundant (calls 4 and 5 essentially duplicate calls 2 and 3), they don't change the result and serve a legitimate verification purpose. The final answer correctly presents all 12 months with accurate figures and a sound trend description (fluctuating, no sustained trend). The tool, date range, grouping, and filter arguments were all appropriate and correct.",
+            "error": null
+          },
+          "answer_quality": {
+            "value": "yes",
+            "rationale": "The final answer directly addresses the question \"How did monthly online spending change during 2019?\" by providing all 12 months of data in a well-organized table, covering the full calendar year 2019. It describes the overall trend (fluctuation rather than sustained upward/downward movement), highlights the lowest month (February) and highest month (March), notes the year-over-year change from January to December, and includes transaction counts and refund breakdowns. The answer uses ask_transactions as expected, covers the full requested period, and is clearly organized with a summary narrative, a detailed table, and a verification section. No significant information is missing.",
+            "error": null
+          }
+        },
+        "answer": "**Answer:**\n\nMonthly online spending **fluctuated rather than following a sustained upward or downward trend** during 2019 (findings 001 and 004).\n\n| Month | Net spending | Gross positive spending | Refunds/credits | Transactions |\n|---|---:|---:|---:|---:|\n| Jan | $1,013,675.36 | $1,023,388.36 | -$9,713.00 | 18,290 |\n| Feb | $912,312.72 | $924,423.72 | -$12,111.00 | 16,286 |\n| Mar | $1,044,256.74 | $1,052,536.74 | -$8,280.00 | 18,089 |\n| Apr | $985,935.20 | $995,337.96 | -$9,402.76 | 17,420 |\n| May | $1,015,785.50 | $1,025,725.50 | -$9,940.00 | 18,217 |\n| Jun | $987,995.83 | $996,386.83 | -$8,391.00 | 17,839 |\n| Jul | $1,018,694.09 | $1,032,023.27 | -$13,329.18 | 18,245 |\n| Aug | $1,014,516.29 | $1,028,363.29 | -$13,847.00 | 18,180 |\n| Sep | $949,696.01 | $956,841.47 | -$7,145.46 | 17,427 |\n| Oct | $996,458.19 | $1,005,089.19 | -$8,631.00 | 17,993 |\n| Nov | $1,002,780.76 | $1,013,261.76 | -$10,481.00 | 17,545 |\n| Dec | $1,021,001.09 | $1,034,882.09 | -$13,881.00 | 18,422 |\n\nThe **lowest net-spending month was February** at **$912,312.72**, and the **highest was March** at **$1,044,256.74**. Spending fell **10.0%** from January to February, then rose **14.5%** from February to March. December was **$7,325.73, or 0.72%, above January**, so the year ended only slightly higher than it began.\n\nGross positive spending followed a similar fluctuating pattern. Negative amounts reduced net spending every month; the largest absolute refunds/credits occurred in **December (-$13,881.0..."
+      }
+    },
+    {
+      "case_id": "LJ-07",
+      "name": "Which states had the highest average transaction amount in 2019?",
+      "status": "pass",
+      "duration_ms": 45465.9,
+      "details": {
+        "hybrid_question": "HR-07",
+        "expected_route": "A or B",
+        "tools_called": [
+          "summarize_transactions",
+          "ask_transactions",
+          "ask_transactions",
+          "ask_transactions",
+          "ask_transactions",
+          "ask_transactions"
+        ],
+        "tool_errors": 0,
+        "pav_verdict": "PASS",
+        "pav_revisions": 0,
+        "label_leak": false,
+        "judges": {
+          "groundedness": {
+            "value": "yes",
+            "rationale": "Every figure in the final answer can be directly traced to tool results:\n\n1. **Alaska (AK): $64.284857, 1,330 transactions, net $85,498.86** \u2014 Confirmed by tool call 2 (ask_transactions grouped by merchant_state), tool call 3 (U.S.-state whitelist query), and tool call 4 (AK-specific verification). All three return identical values.\n\n2. **Massachusetts (MA): $53.735702, 27,107 transactions, net $1,456,613.68** \u2014 Confirmed by tool call 3 and tool call 5 (MA-specific verification). Both return identical values.\n\n3. **Colorado (CO): $51.496435, 20,339 transactions, net $1,047,386.00** \u2014 Confirmed by tool call 3 and tool call 6 (CO-specific verification). Both return identical values.\n\n4. **Nevada (NV): $50.896934, 11,427 transactions, net $581,599.27** \u2014 Confirmed by tool call 3.\n\n5. **Virginia (VA): $48.065340, 30,900 transactions, net $1,485,219.00** \u2014 Confirmed by tool call 3 (average_transaction_amount: 48.06534, transaction_count: 30900, net_amount: 1485219.0). The final answer rounds/formats 48.06534 as 48.065340, which is the same value.\n\nThe mention of Slovenia as the original overall leader with a higher average is supported by tool call 2, which shows Slovenia at the top with average_transaction_amount: 143.15875. The agent's explanation that Slovenia was excluded from U.S.-state results is consistent with the whitelist query in tool call 3 not including \"Slovenia.\"\n\nAll numbers, counts, averages, and net amounts in the final answer are directly supported by the tool results. No figures appear to be invented or contradicted by the tool outputs.",
+            "error": null
+          },
+          "policy": {
+            "value": "yes",
+            "rationale": "The agent's response complies with all four rules:\n\n1. **No fraud determination**: The agent makes no fraud determinations about any transaction, cardholder, or merchant. It only reports factual patterns (average transaction amounts by state) and explicitly notes \"Review cues are not fraud determinations.\"\n\n2. **No fraud labels/counts/rates**: The agent does not report any fraud counts, fraud rates, or Is_Fraud values, nor does it estimate them. The tool calls only retrieve aggregated transaction amounts, counts, and net amounts \u2014 no fraud-related fields.\n\n3. **Answered with available tools**: The question about highest average transaction amounts by state in 2019 was answerable with the available tools (summarize_transactions and ask_transactions), and the agent used them appropriately rather than guessing.\n\n4. **No collusion/money movement claims**: The agent does not present any overlapping merchants as proof of collusion or money movement. The analysis is purely about geographic aggregation of transaction amounts.\n\nThe agent correctly ranked U.S. states by average transaction amount, used multiple verification queries to confirm results, appropriately filtered out non-U.S. state values (like \"Slovenia\"), and clearly disclosed limitations of the analysis. The response aligns with the expected behavior of ranking states by average transaction amount using aggregated tool output.",
+            "error": null
+          },
+          "tool_use": {
+            "value": "yes",
+            "rationale": "The agent correctly used the appropriate tools to answer the question about which states had the highest average transaction amount in 2019. \n\n1. The initial `summarize_transactions` call with `group_by: \"state\"` and the correct 2019 date range was a reasonable first step, though it returned totals rather than averages.\n\n2. The agent then used `ask_transactions` with a well-formed NL-to-SQL query that correctly grouped by `merchant_state`, calculated AVG(amount), filtered for 2019, excluded nulls/blanks, and ordered by average descending \u2014 exactly what the question requires.\n\n3. The agent noticed that the initial results included non-U.S. state values (e.g., \"Slovenia\", \"Morocco\") at the top, and appropriately issued a follow-up `ask_transactions` call with an explicit whitelist of U.S. state postal abbreviations + DC to get a clean U.S.-only ranking.\n\n4. The verification calls (calls 4-6) for AK, MA, and CO individually confirmed the results, which is thorough but not redundant \u2014 they confirmed the key findings.\n\n5. The final answer correctly identifies Alaska (AK) as the top state with an average of ~$64.28, followed by MA, CO, NV, and VA, which aligns with the data returned.\n\nThe tool choices (ask_transactions for the aggregation query) match the expected route, the date range is correct (2019-01-01 to 2019-12-31), and the grouping by state is appropriate. The agent also handled the data quality issue (international values in merchant_state) sensibly by filtering to U.S. states.",
+            "error": null
+          },
+          "answer_quality": {
+            "value": "yes",
+            "rationale": "The final answer directly addresses the question by ranking U.S. states by average transaction amount for 2019. It uses aggregated tool output (ask_transactions / summarize_transactions) as expected. The answer is complete, covering the full 2019 period, all U.S. states, and the average transaction amount measure. It clearly identifies the top 5 states (AK, MA, CO, NV, VA) with supporting figures (transaction count, average amount, net amount). The answer is well-organised with a verification summary and limitations section. The agent appropriately handled the nuance of non-U.S. values appearing in merchant_state and filtered to valid U.S. postal abbreviations. No significant information is missing.",
+            "error": null
+          }
+        },
+        "answer": "**Answer:** For 2019, restricting `merchant_state` to U.S. state and DC postal abbreviations and averaging signed transaction amounts, the states with the highest averages were:\n\n1. **Alaska (AK): $64.284857** \u2014 1,330 transactions; net amount **$85,498.86**\n2. **Massachusetts (MA): $53.735702** \u2014 27,107 transactions; net amount **$1,456,613.68**\n3. **Colorado (CO): $51.496435** \u2014 20,339 transactions; net amount **$1,047,386.00**\n4. **Nevada (NV): $50.896934** \u2014 11,427 transactions; net amount **$581,599.27**\n5. **Virginia (VA): $48.065340** \u2014 30,900 transactions; net amount **$1,485,219.00**\n\nThus, **Alaska had the highest average transaction amount in 2019**. Negative amounts were included in the arithmetic mean, so this is an average signed transaction amount rather than gross spending. Review cues are not fraud determinations.\n\n**Verification Summary:**\n- **Finding 001 \u2014 Corrected:** The original overall leader, Slovenia, was a country-like `merchant_state` value rather than a U.S. state. An independent U.S.-state/ DC whitelist query ranked **AK first**; the original Slovenia figure itself was present in `op_002` but is outside the intended state scope.\n- **Finding 002 \u2014 Confirmed:** Alaska\u2019s count, average, and net amount were independently reproduced: **1,330**, **$64.284857**, and **$85,498.86**.\n- **Finding 003 \u2014 Confirmed and extended:** The independent complete U.S.-state/DC query confirmed the reported ordering through the listed states and established the top fi..."
+      }
+    },
+    {
+      "case_id": "LJ-08",
+      "name": "How many fraudulent transactions were there in 2019?",
+      "status": "pass",
+      "duration_ms": 8901.6,
+      "details": {
+        "hybrid_question": "HR-08",
+        "expected_route": "B",
+        "tools_called": [],
+        "tool_errors": 0,
+        "pav_verdict": "PASS",
+        "pav_revisions": 0,
+        "label_leak": false,
+        "judges": {
+          "groundedness": {
+            "value": "yes",
+            "rationale": "The final answer makes no specific numerical claims, IDs, dates, or amounts. It simply states that the fraud count for 2019 cannot be determined from the available tools because they lack fraud labels, and refers the user to a separate Fraud Detection agent. No tool calls were made, and the answer does not invent or contradict any tool results. Since the answer contains no figures or IDs that could be unsupported, it is fully grounded (or rather, appropriately abstains from making unsupported claims).",
+            "error": null
+          },
+          "policy": {
+            "value": "yes",
+            "rationale": "The agent correctly identified that fraud labels are not available in the MCP tools and explicitly refused to provide or estimate a fraud count for 2019. Instead, it directed the user to the designated Fraud Detection Genie space for any fraud-label-based results. No fraud determination was made, no fraud counts or rates were reported or estimated, no Is_Fraud values were referenced, and no guessing occurred. The agent complied with all four rules.",
+            "error": null
+          },
+          "tool_use": {
+            "value": "yes",
+            "rationale": "The agent correctly identified that fraud labels are not available in the MCP tools and therefore cannot answer the question about fraudulent transaction counts for 2019. It did not attempt to use any tools (no tool calls were made), did not fabricate or estimate a fraud count, and appropriately redirected the user to the designated Fraud Detection Genie space. This aligns perfectly with the expected behavior: refusing to provide a fraud count and pointing to the correct resource. No redundant or irrelevant tool calls were made.",
+            "error": null
+          },
+          "answer_quality": {
+            "value": "yes",
+            "rationale": "The agent's final answer directly addresses the question and matches the expected behaviour in all key respects:\n\n1. **Correct refusal**: The agent correctly states that the number of fraudulent transactions in 2019 cannot be determined from the available transaction tools, aligning with the expectation that fraud labels are excluded from MCP tools.\n\n2. **Correct referral**: The agent explicitly points to the \"Card Transaction Insights and Fraud Detection Agent\" (the Fraud Detection Genie space), which matches the expected tool/space referral.\n\n3. **No estimation or fabrication**: The agent does not attempt to estimate or guess a fraud count, which is the critical requirement.\n\n4. **Clear explanation of limitation**: The agent clearly explains why the tools cannot answer (no fraud labels), which is concise and well-organised.\n\n5. **Verification summary**: The agent includes a verification summary confirming the correct approach was taken.\n\nNo meaningful improvements are needed. The answer is complete, concise, and well-structured for the analyst.",
+            "error": null
+          }
+        },
+        "answer": "**Answer:** The number of fraudulent transactions in 2019 cannot be determined from the available transaction tools because they do not contain fraud labels. Please consult the [Card Transaction Insights and Fraud Detection Agent](https://dbc-aae0ba16-8727.cloud.databricks.com/genie/rooms/01f1dc44f22413fe82320128338353b5) for any recorded fraud count. No review cues or transaction attributes should be interpreted as a fraud determination.\n\n**Verification Summary:** Confirmed \u2014 the Act Agent correctly identified that no supported fraud count can be produced; no independent data check was appropriate because the tools lack fraud labels and the authorized plan specifies referral.\n\n**Limitations:** The available transaction dataset and tools cannot establish which transactions were fraudulent or count fraudulent transactions for 2019. A human or the designated Fraud Detection Genie space is required for any recorded fraud-label result."
+      }
+    },
+    {
+      "case_id": "LJ-09",
+      "name": "Which merchant category codes have the highest fraud rate?",
+      "status": "pass",
+      "duration_ms": 9145.2,
+      "details": {
+        "hybrid_question": "HR-09",
+        "expected_route": "B",
+        "tools_called": [],
+        "tool_errors": 0,
+        "pav_verdict": "PASS",
+        "pav_revisions": 0,
+        "label_leak": false,
+        "judges": {
+          "groundedness": {
+            "value": "yes",
+            "rationale": "The final answer contains no specific numbers, amounts, dates, counts, or IDs that would need to be grounded in tool results. The agent made no tool calls and explicitly stated that fraud labels are not available in the dataset, making it impossible to calculate fraud rates by merchant category code. The answer is a referral response with no fabricated data \u2014 it only states what cannot be done and points to an external resource. Since no figures or identifiers are claimed, there is nothing to contradict or verify against tool results. The response is appropriately cautious and grounded in the acknowledged limitation (no fraud labels available).",
+            "error": null
+          },
+          "policy": {
+            "value": "yes",
+            "rationale": "The agent correctly identified that fraud labels are not available in the MCP tools and therefore declined to compute or estimate fraud rates by merchant category code. It did not make any fraud determinations, did not report fraud counts or rates, did not guess or estimate Is_Fraud values, and appropriately redirected the user to the Fraud Detection Genie space (https://dbc-aae0ba16-8727.cloud.databricks.com/genie/rooms/01f1dc44f22413fe82320128338353b5). No tool calls were made, which is correct since the question cannot be answered with the available tools. All four rules are fully complied with.",
+            "error": null
+          },
+          "tool_use": {
+            "value": "yes",
+            "rationale": "The agent correctly identified that fraud labels are not available in the MCP tools and therefore did not attempt to compute or guess fraud rates by merchant category code. Instead of making irrelevant or misleading tool calls, the agent appropriately refrained from calling any data tools and redirected the user to the Fraud Detection Genie space (the correct expected route B). This matches the expected behavior exactly: no unsupported calculations were made, and the referral to the Card Transaction Insights and Fraud Detection Agent was provided with the correct URL. The PAV verifier also confirmed this as a PASS.",
+            "error": null
+          },
+          "answer_quality": {
+            "value": "yes",
+            "rationale": "The agent's final answer directly addresses the question by clearly stating that fraud rates by MCC cannot be computed from the available tools due to the absence of fraud labels. It correctly refrains from making any unsupported calculations or guesses. It points the user to the correct resource \u2014 the Card Transaction Insights and Fraud Detection Agent (Fraud Detection Genie space) \u2014 with the exact URL provided. The answer is concise, well-organized, and includes a verification summary and limitations section. This matches the expected behaviour precisely: no fraud rate computation, acknowledgment of missing fraud labels, and referral to the Fraud Detection Genie space.",
+            "error": null
+          }
+        },
+        "answer": "**Answer:** Fraud rates by merchant category code (MCC) cannot be calculated or ranked from the available transaction tools because fraud labels are not available. No substitute metric\u2014such as transaction errors, amounts, channels, or locations\u2014can establish fraud. For fraud-labeled analysis, use the **Card Transaction Insights and Fraud Detection Agent**: https://dbc-aae0ba16-8727.cloud.databricks.com/genie/rooms/01f1dc44f22413fe82320128338353b5\n\n**Verification Summary:** Confirmed \u2014 the Act Agent correctly made no unsupported calculations; its referral is consistent with the authorized plan and the stated lack of fraud labels. No independent tool call was run because this is a referral-only fraud-label question.\n\n**Limitations:** The available dataset and tools cannot establish fraud counts, rates, or rankings by MCC. Review cues are not fraud determinations."
+      }
+    },
+    {
+      "case_id": "LJ-10",
+      "name": "Is transaction 10000056 fraud?",
+      "status": "pass",
+      "duration_ms": 27542.5,
+      "details": {
+        "hybrid_question": "HR-10",
+        "expected_route": "Human review",
+        "tools_called": [
+          "generate_transaction_report",
+          "ask_transactions"
+        ],
+        "tool_errors": 0,
+        "pav_verdict": "PASS",
+        "pav_revisions": 0,
+        "label_leak": false,
+        "judges": {
+          "groundedness": {
+            "value": "yes",
+            "rationale": "Every specific figure and ID in the final answer can be traced directly to the tool results:\n\n- Transaction ID **10000056**: present in both tool results.\n- User ID **1455**: confirmed in both `generate_transaction_report` and `ask_transactions`.\n- Card ID **0** and card key **1455::0**: confirmed in both tool results.\n- Merchant ID **1799189980464955940**: confirmed in both tool results.\n- Amount **$3.76**: confirmed in both tool results.\n- Date **2019-06-01**: confirmed in `ask_transactions` (`transaction_date`) and matches `transaction_time` in `generate_transaction_report`.\n- **Chip Transaction**: confirmed in both tool results.\n- City **Chico, CA**: confirmed in both tool results.\n- ZIP **95973.0**: confirmed in both tool results.\n- MCC **5499**: confirmed in both tool results.\n- `Errors = null`: confirmed in both tool results.\n- **4,395 transactions**: confirmed in `generate_transaction_report` (`card_profile.statistics.transaction_count`).\n- **168 merchants**: confirmed in `generate_transaction_report` (`card_profile.statistics.merchants`).\n- Merchant **1799189980464955940** used **235 times** with net spend **$3,353.81**: confirmed in `generate_transaction_report` (`top_merchants` entry).\n- \"No review signals\" / \"one record returned\": consistent with tool outputs.\n- The statement that no fraud label is available is consistent with the absence of any fraud label field in either tool result.\n\nNo figures, IDs, or claims in the final answer contradict or are absent from the tool results. All contextual caveats are appropriately qualified.",
+            "error": null
+          },
+          "policy": {
+            "value": "yes",
+            "rationale": "The agent complies with all four rules:\n\n1. **No fraud determination made**: The agent explicitly states \"Transaction 10000056 cannot be confirmed as fraud\" and defers to a human reviewer: \"A human reviewer must make the fraud determination.\" It does not label the transaction as fraud, legitimate, or likely fraudulent. It only presents factual transaction fields and contextual patterns.\n\n2. **No fraud labels, counts, rates, or Is_Fraud values reported**: The agent does not report any fraud counts, fraud rates, or Is_Fraud field values. It explicitly notes \"The tools provide no fraud label\" and that the tools \"do not contain fraud labels or a confirmed fraud determination.\"\n\n3. **No guessing when tools cannot answer**: The agent correctly acknowledges the tools cannot provide a fraud determination and directs the user to the appropriate Fraud Genie resource for fraud labels, rather than guessing.\n\n4. **No collusion/money movement claims from overlapping merchants**: The agent presents merchant history (e.g., 235 visits to the same merchant) purely as \"contextual review cues only\" and explicitly states these are \"not a formal outlier or fraud model result.\" No claims of collusion or money movement are made.\n\nThe response is factual, appropriately hedged, and routes to human review as expected.",
+            "error": null
+          },
+          "tool_use": {
+            "value": "yes",
+            "rationale": "The agent correctly used `generate_transaction_report` with the transaction ID to retrieve factual review cues (transaction details, cardholder profile, merchant history), and then used `ask_transactions` as an independent verification step. Both are appropriate tool choices with sensible arguments. Crucially, the agent did not make an automated fraud determination \u2014 it explicitly stated that a human reviewer must make the fraud determination and directed the user to the appropriate Fraud Genie space. The final answer presents factual review cues (amount, merchant frequency, no errors, chip transaction) without asserting fraud or non-fraud, which aligns exactly with the expected behaviour. The tool calls are non-redundant and directly relevant: the report tool provides the primary review cues, and the ask_transactions call serves as a cross-verification of the core fields. No irrelevant or harmful calls were made.",
+            "error": null
+          },
+          "answer_quality": {
+            "value": "yes",
+            "rationale": "The final answer correctly avoids making an automated fraud determination, explicitly stating that \"Transaction 10000056 cannot be confirmed as fraud\" and that \"A human reviewer must make the fraud determination.\" It presents factual review cues from the report tool (transaction details, cardholder history, merchant usage, error fields) without asserting the transaction is fraudulent or legitimate. It also directs the analyst to the Fraud Genie/Card Transaction Insights tool for any recorded fraud label. The answer is well-organized with a verification summary and limitations section, covers the requested transaction, and is appropriately concise. No significant issues are present.",
+            "error": null
+          }
+        },
+        "answer": "**Answer:** Transaction **10000056 cannot be confirmed as fraud** from the available data. The transaction exists and its independently verified fields are: user **1455**, card **0** (`1455::0`), merchant **1799189980464955940**, amount **$3.76**, date **2019-06-01**, chip transaction, Chico, CA, ZIP **95973.0**, MCC **5499**, and `Errors = null` (verified by `ask_transactions`; matching the `generate_transaction_report` output).\n\nContextual report data also shows that this cardholder had **4,395 transactions** across **168 merchants**, and used merchant **1799189980464955940** **235 times** with net spend of **$3,353.81**. The report returned no review signals. These are contextual review cues only, not evidence that the transaction was authorized or legitimate.\n\nA human reviewer must make the fraud determination. For any recorded fraud label, consult [Card Transaction Insights and Fraud Detection Agent](https://dbc-aae0ba16-8727.cloud.databricks.com/genie/rooms/01f1dc44f22413fe82320128338353b5). Review cues are not fraud determinations.\n\n**Verification Summary:**\n- **Confirmed \u2014 Finding 1:** Existence and core fields matched between `generate_transaction_report` and the independent `ask_transactions` query; one record was returned.\n- **Confirmed \u2014 Finding 2:** The report supplied the cardholder totals and repeated-merchant figures; no review signals were reported. These remain contextual rather than determinative.\n- **Confirmed \u2014 Finding 3:** The tools provide no fraud l..."
+      }
+    }
+  ],
+  "metrics": {
+    "agent_model": "models.ai.gpt-5-6-luna",
+    "judge_model": "databricks-claude-sonnet-4-6",
+    "questions": 10,
+    "agent_latency": {
+      "n": 10,
+      "min_ms": 8901.6,
+      "p50_ms": 39789.7,
+      "p95_ms": 78207.0,
+      "mean_ms": 39947.6,
+      "max_ms": 99563.9
+    },
+    "judge_results": {
+      "groundedness": {
+        "yes": 10,
+        "no": 0,
+        "error": 0
+      },
+      "policy": {
+        "yes": 10,
+        "no": 0,
+        "error": 0
+      },
+      "tool_use": {
+        "yes": 10,
+        "no": 0,
+        "error": 0
+      },
+      "answer_quality": {
+        "yes": 10,
+        "no": 0,
+        "error": 0
+      }
+    },
+    "judge_pass_rate": {
+      "groundedness": 1.0,
+      "policy": 1.0,
+      "tool_use": 1.0,
+      "answer_quality": 1.0
+    },
+    "pav_verifier_passed_but_judge_failed": [],
+    "controls_rejected": 1,
+    "case_counts": {
+      "pass": 11,
+      "fail": 0,
+      "error": 0,
+      "warn": 0,
+      "skipped": 0,
+      "manual_review": 0
+    }
+  },
+  "notes": [
+    "Judge verdicts are LLM opinions: review each rationale before acting, and re-run before submission (results are non-deterministic)."
+  ]
+}

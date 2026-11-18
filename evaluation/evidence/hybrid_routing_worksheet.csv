@@ -1,0 +1,11 @@
+question_id,question,expected_route,expected_tool_or_space,option_a_custom_mcp_answer,option_a_correct,option_b_genie_answer,option_b_correct,preferred_option,reviewer,reviewer_notes
+HR-01,What were the top 10 merchants by transaction count in 2019?,A,summarize_transactions,,,,,,,
+HR-02,Give me a spending profile for cardholder 1455.,A,get_cardholder_profile,,,,,,,
+HR-03,Which other cardholders shop at the same merchants as user 1455?,A,merchant_relationships,,,,,,,
+HR-04,Prepare a review report for transaction 10000056.,A,generate_transaction_report,,,,,,,
+HR-05,List the 20 most recent transactions for user 1455 in 2019.,A,search_transactions,,,,,,,
+HR-06,How did monthly online spending change during 2019?,A or B,ask_transactions / Behavioral Genie,,,,,,,
+HR-07,Which states had the highest average transaction amount in 2019?,A or B,ask_transactions / Behavioral Genie,,,,,,,
+HR-08,How many fraudulent transactions were there in 2019?,B,Fraud Detection Genie (labels are excluded from MCP tools),,,,,,,
+HR-09,Which merchant category codes have the highest fraud rate?,B,Fraud Detection Genie,,,,,,,
+HR-10,Is transaction 10000056 fraud?,Human review,Report review cues + Fraud Genie label; no automated determination,,,,,,,
