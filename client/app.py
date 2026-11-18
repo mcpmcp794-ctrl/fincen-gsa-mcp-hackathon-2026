@@ -74,7 +74,7 @@ st.markdown("""
       border: 1px solid #3A475C; }
   [data-testid="stSidebar"] .stButton > button:hover { border-color: #4C8DF6; color: #4C8DF6; }
   [data-testid="stSidebar"] hr { border-color: #3A475C; }
-  .fc-seal { width: 104px; margin: 4px 0 10px 0; }
+  .fc-seal { display: block; width: 104px; margin: 4px auto 10px auto; }  /* centered in sidebar */
   .fc-side-title { font-size: 1.45rem; font-weight: 700; margin: 4px 0 14px 0; }
   .fc-title { font-size: 2.7rem; font-weight: 800; line-height: 1.15; margin: 0 0 .35rem 0; }
   .fc-sub { color: #AEB8C8; font-size: .9rem; margin-bottom: 1.1rem; }
