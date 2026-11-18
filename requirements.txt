@@ -1,0 +1,7 @@
+# Runtime dependencies (kept in sync with pyproject.toml [project].dependencies).
+# Databricks Apps installs this file at deploy time.
+mcp>=1.10,<2
+databricks-sql-connector>=3.4
+databricks-sdk>=0.30
+pydantic-settings>=2.0
+sqlglot>=25

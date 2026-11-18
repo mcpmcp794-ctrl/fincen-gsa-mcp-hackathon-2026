@@ -1,0 +1,12 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "gov.fincen/fraudulent-transaction-mcp",
+  "description": "Read-only MCP tools for synthetic TabFormer credit-card transactions on Databricks (search, summaries, cardholder profiles, merchant overlap, review reports, NL-to-SQL).",
+  "version": "0.1.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://fraudulent-transaction-mcp-7474654188777746.aws.databricksapps.com/mcp"
+    }
+  ]
+}

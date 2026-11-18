@@ -1,0 +1,29 @@
+# Databricks Apps configuration for the Fraudulent Transaction MCP server.
+# Identical copies live at the repo root (where Databricks Apps reads it) and in
+# deploy/databricks/app.yaml (template location). Keep them in sync.
+#
+# Endpoints: https://<app-url>/mcp (streamable HTTP, stateless), /health, /version
+# Databricks injects DATABRICKS_APP_PORT, DATABRICKS_HOST and the app's OAuth
+# service-principal credentials. app.py serves HTTP when DATABRICKS_APP_PORT is set.
+command:
+  - /bin/sh
+  - -c
+  - PYTHONPATH=src:$PYTHONPATH exec python -m fraud_transaction_mcp.app
+env:
+  # Label-free analysis table (the app service principal needs SELECT).
+  # Rebuilt from workspace.default.card_transaction by Jenna's notebooks 00/01
+  # with card_transaction_mcp_* table names (owned by Michael).
+  - name: CARD_TRANSACTION_TABLE
+    value: workspace.default.card_transaction_mcp_clean
+  # From the app's SQL warehouse resource (resource key: sql-warehouse).
+  - name: DATABRICKS_WAREHOUSE_ID
+    valueFrom: sql-warehouse
+  # Model used by ask_transactions (UC model service; resource key: model, EXECUTE).
+  - name: LLM_ENDPOINT
+    value: models.ai.gpt-5-6-luna
+  # Evaluation only. Keep "false" for analysis deployments. If "true", the
+  # service principal also needs SELECT on EVALUATION_LABEL_TABLE.
+  - name: ENABLE_EVALUATION_TOOLS
+    value: "false"
+  - name: EVALUATION_LABEL_TABLE
+    value: workspace.default.card_transaction_mcp_evaluation_labels
